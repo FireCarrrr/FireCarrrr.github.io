@@ -14,7 +14,7 @@
     
     
     
-    <title>MySQL索引(一) | YUYUYU&#39;s Blog</title>
+    <title>MySQL索引（一） | YUYUYU&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -23,20 +23,20 @@
     <meta name="keywords" content>
     <meta name="description" content="MySQL索引最近在看数据库索引相关的内容，想写成blog，一来整理一下笔记，二来整理一下思路。 索引的目的是加快数据访问的速度，要实现这个目的需要用到一些高效的数据结构。索引是在存储引擎层实现的，不同的存储引擎可能采用不同的实现方式，用到的数据结构也不尽相同。 索引的数据结构基础B-Tree和B+ TreeMySQL的默认存储引擎InnoDB使用B+ Tree来实现索引，B+ Tree是B-Tr">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MySQL索引(一)">
-<meta property="og:url" content="https://firecarrrr.github.io/2019/07/20/#MySQL索引/index.html">
+<meta property="og:title" content="MySQL索引（一）">
+<meta property="og:url" content="https://firecarrrr.github.io/2019/07/20/mysql-index/index.html">
 <meta property="og:site_name" content="YUYUYU&#39;s Blog">
 <meta property="og:description" content="MySQL索引最近在看数据库索引相关的内容，想写成blog，一来整理一下笔记，二来整理一下思路。 索引的目的是加快数据访问的速度，要实现这个目的需要用到一些高效的数据结构。索引是在存储引擎层实现的，不同的存储引擎可能采用不同的实现方式，用到的数据结构也不尽相同。 索引的数据结构基础B-Tree和B+ TreeMySQL的默认存储引擎InnoDB使用B+ Tree来实现索引，B+ Tree是B-Tr">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="d:/Blog/blog/public/images/innoDB和MyISAM存储方式对比.png">
-<meta property="og:image" content="d:/Blog/blog/public/images/explain.png">
-<meta property="og:image" content="d:/Blog/blog/public/images/索引下推1.jpg">
-<meta property="og:image" content="d:/Blog/blog/public/images/索引下推2.jpg">
-<meta property="og:updated_time" content="2019-07-20T08:05:10.337Z">
+<meta property="og:image" content="https://firecarrrr.github.io/2019/07/20/mysql-index/索引对比.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2019/07/20/mysql-index/usingIndex.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2019/07/20/mysql-index/索引下推1.jpg">
+<meta property="og:image" content="https://firecarrrr.github.io/2019/07/20/mysql-index/索引下推2.png">
+<meta property="og:updated_time" content="2019-07-20T09:20:21.078Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MySQL索引(一)">
+<meta name="twitter:title" content="MySQL索引（一）">
 <meta name="twitter:description" content="MySQL索引最近在看数据库索引相关的内容，想写成blog，一来整理一下笔记，二来整理一下思路。 索引的目的是加快数据访问的速度，要实现这个目的需要用到一些高效的数据结构。索引是在存储引擎层实现的，不同的存储引擎可能采用不同的实现方式，用到的数据结构也不尽相同。 索引的数据结构基础B-Tree和B+ TreeMySQL的默认存储引擎InnoDB使用B+ Tree来实现索引，B+ Tree是B-Tr">
-<meta name="twitter:image" content="d:/Blog/blog/public/images/innoDB和MyISAM存储方式对比.png">
+<meta name="twitter:image" content="https://firecarrrr.github.io/2019/07/20/mysql-index/索引对比.png">
     
         <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
     
@@ -131,7 +131,7 @@
         <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
           <i class="icon icon-lg icon-navicon"></i>
         </a>
-        <div class="flex-col header-title ellipsis">MySQL索引(一)</div>
+        <div class="flex-col header-title ellipsis">MySQL索引（一）</div>
         
         <div class="search-wrap" id="search-wrap">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
@@ -153,10 +153,10 @@
 <header class="content-header post-header">
 
     <div class="container fade-scale">
-        <h1 class="title">MySQL索引(一)</h1>
+        <h1 class="title">MySQL索引（一）</h1>
         <h5 class="subtitle">
             
-                <time datetime="2019-07-19T16:00:00.000Z" itemprop="datePublished" class="page-time">
+                <time datetime="2019-07-20T09:11:18.000Z" itemprop="datePublished" class="page-time">
   2019-07-20
 </time>
 
@@ -183,12 +183,12 @@
     </aside>
 
 
-<article id="post-#MySQL索引" class="post-article article-type-post fade" itemprop="blogPost">
+<article id="post-mysql-index" class="post-article article-type-post fade" itemprop="blogPost">
 
     <div class="post-card">
-        <h1 class="post-card-title">MySQL索引(一)</h1>
+        <h1 class="post-card-title">MySQL索引（一）</h1>
         <div class="post-meta">
-            <time class="post-time" title="2019-07-20 00:00:00" datetime="2019-07-19T16:00:00.000Z" itemprop="datePublished">2019-07-20</time>
+            <time class="post-time" title="2019-07-20 17:11:18" datetime="2019-07-20T09:11:18.000Z" itemprop="datePublished">2019-07-20</time>
 
             
 	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
@@ -232,9 +232,9 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\public\images\innoDB和MyISAM存储方式对比.png" alt title>
+                    <img src="索引对比.png" alt="innoDB和MyISAM索引.png" title>
                 </div>
-                <div class="image-caption"></div>
+                <div class="image-caption">innoDB和MyISAM索引.png</div>
             </figure>
 
 <h3 id="索引覆盖"><a href="#索引覆盖" class="headerlink" title="索引覆盖"></a>索引覆盖</h3><p>上面说了，二级索引的叶子节点中只存放索引列的值和主键ID，对于非索引列的查找需要回表。这会带来额外的开销。索引覆盖就是说能不能让索引把查找的target字段全部给包含了。</p>
@@ -242,9 +242,9 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\public\images\explain.png" alt title>
+                    <img src="usingIndex.png" alt="explain.png" title>
                 </div>
-                <div class="image-caption"></div>
+                <div class="image-caption">explain.png</div>
             </figure>
 
 <h3 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h3><p>在联合索引中，索引列的顺序对索引的利用率和性能上是有影响的。在一个多列B-Tree索引中，索引列的顺序决定了排序的顺序，越靠左的列排序的优先级越高，也就是说，会先按照第一列排序，在按照第二列排序，以此类推。与此同时，在索引匹配时，是从左往右匹配的。</p>
@@ -263,18 +263,18 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\public\images\索引下推1.jpg" alt="img" title>
+                    <img src="索引下推1.jpg" alt="索引下推1.jpg" title>
                 </div>
-                <div class="image-caption">img</div>
+                <div class="image-caption">索引下推1.jpg</div>
             </figure>
 
 <p>在MySQL 5.6引入了索引下推优化(index condition pushdown)，可以再索引遍历过程中，对索引包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表的次数。</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\public\images\索引下推2.jpg" alt="img" title>
+                    <img src="索引下推2.png" alt="索引下推2.png" title>
                 </div>
-                <div class="image-caption">img</div>
+                <div class="image-caption">索引下推2.png</div>
             </figure>
 
 
@@ -288,12 +288,12 @@
     <div class="content">
         
 <span class="post-time">
-    Last updated: <time datetime="2019-07-20T08:05:10.337Z" itemprop="dateUpdated">2019-07-20 16:05:10</time>
+    Last updated: <time datetime="2019-07-20T09:20:21.078Z" itemprop="dateUpdated">2019-07-20 17:20:21</time>
 </span><br>
 
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/07/20/#MySQL索引/" target="_blank" rel="external">https://firecarrrr.github.io/2019/07/20/#MySQL索引/</a>
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/07/20/mysql-index/" target="_blank" rel="external">https://firecarrrr.github.io/2019/07/20/mysql-index/</a>
         
     </div>
     
@@ -318,7 +318,7 @@
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/&title=《MySQL索引(一)》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2019/07/20/mysql-index/&title=《MySQL索引（一）》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -328,22 +328,22 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/&title=《MySQL索引(一)》 — YUYUYU's Blog&source=" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2019/07/20/mysql-index/&title=《MySQL索引（一）》 — YUYUYU's Blog&source=" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
       <li>
-        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2019/07/20/#MySQL索引/" data-title=" Facebook">
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2019/07/20/mysql-index/" data-title=" Facebook">
           <i class="icon icon-facebook"></i>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《MySQL索引(一)》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/&via=https://firecarrrr.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《MySQL索引（一）》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2019/07/20/mysql-index/&via=https://firecarrrr.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
       <li>
-        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/" data-title=" Google+">
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2019/07/20/mysql-index/" data-title=" Google+">
           <i class="icon icon-google-plus"></i>
         </a>
       </li>
@@ -444,7 +444,7 @@
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/&title=《MySQL索引(一)》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2019/07/20/mysql-index/&title=《MySQL索引（一）》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -454,22 +454,22 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/&title=《MySQL索引(一)》 — YUYUYU's Blog&source=" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2019/07/20/mysql-index/&title=《MySQL索引（一）》 — YUYUYU's Blog&source=" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
       <li>
-        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2019/07/20/#MySQL索引/" data-title=" Facebook">
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2019/07/20/mysql-index/" data-title=" Facebook">
           <i class="icon icon-facebook"></i>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《MySQL索引(一)》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/&via=https://firecarrrr.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《MySQL索引（一）》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2019/07/20/mysql-index/&via=https://firecarrrr.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
       <li>
-        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2019/07/20/#MySQL索引/" data-title=" Google+">
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2019/07/20/mysql-index/" data-title=" Google+">
           <i class="icon icon-google-plus"></i>
         </a>
       </li>
@@ -480,7 +480,7 @@
 <div class="page-modal wx-share" id="wxShare">
     <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
-    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2019/07/20/#MySQL索引/" alt="微信分享二维码">
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2019/07/20/mysql-index/" alt="微信分享二维码">
 </div>
 
 
