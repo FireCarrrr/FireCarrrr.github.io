@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://firecarrrr.github.io/"/>
-  <updated>2020-04-15T14:21:53.481Z</updated>
+  <updated>2020-04-22T15:18:21.653Z</updated>
   <id>https://firecarrrr.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>HTTPS与TLS</title>
+    <link href="https://firecarrrr.github.io/2020/04/22/TLS/"/>
+    <id>https://firecarrrr.github.io/2020/04/22/TLS/</id>
+    <published>2020-04-22T13:01:08.000Z</published>
+    <updated>2020-04-22T15:18:21.653Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h1><p>HTTP 是基于明文传输的，不具有安全性。很容易被攻击者截获、更改。HTTPS 协议是基于 SSL/TLS 协议上的安全的传输协议。</p><h2 id="如何定义安全？"><a href="#如何定义安全？" class="headerlink" title="如何定义安全？"></a>如何定义安全？</h2><ul><li><strong>机密性</strong>：数据是被加密的</li><li><strong>完整性</strong>：数据是不可篡改的</li><li><strong>身份认证</strong>：能够确定通信方的身份</li></ul><h3 id="机密性的实现"><a href="#机密性的实现" class="headerlink" title="机密性的实现"></a>机密性的实现</h3><h4 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h4><p>加密和解密使用同一个密钥</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="对称加密.png" alt="对称加密.png" title>                </div>                <div class="image-caption">对称加密.png</div>            </figure><p>对称加密的问题在于无法解决<strong>密钥交换</strong>的问题，就是说怎么安全的将密钥传递给对方？</p><p>常见的对称加密算法：AES,  ChaCha20等</p><h4 id="非对称加密"><a href="#非对称加密" class="headerlink" title="非对称加密"></a><strong>非对称加密</strong></h4><p>存在<strong>公钥（公开）</strong>和<strong>私钥（严格保密）</strong>两个密钥</p><p>加密解密过程具有单向性：公钥加密只能用私钥解密，反之亦然</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="非对称加密.png" alt="非对称加密.png" title>                </div>                <div class="image-caption">非对称加密.png</div>            </figure><p>常用的非对称加密算法：RSA, ECC等</p><h4 id="混合加密"><a href="#混合加密" class="headerlink" title="混合加密"></a>混合加密</h4><p>对称加密无法解决密钥交换问题，非对称加密很慢</p><p>融合两种加密方式优点的解决方案是混合加密</p><ol><li>通信开始时，先用非对称加密解决密钥交换问题</li><li>拿到密钥后，双方使用对称加密进行通信</li></ol><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="混合加密.png" alt="混合加密.png" title>                </div>                <div class="image-caption">混合加密.png</div>            </figure><h3 id="完整性的实现"><a href="#完整性的实现" class="headerlink" title="完整性的实现"></a>完整性的实现</h3><h4 id="摘要算法"><a href="#摘要算法" class="headerlink" title="摘要算法"></a>摘要算法</h4><p>就是用一个 hash 函数，把数据压缩成一个固定长度、独一无二的摘要字符串</p><p>常用的摘要算法：MD5、SHA-1、SHA-2（TLS 推荐使用）</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="摘要算法.png" alt="摘要算法.png" title>                </div>                <div class="image-caption">摘要算法.png</div>            </figure><p>通信一方在发送消息时，也发送消息摘要；通信另一方解密后，再算一次摘要，进行比对。一样就是完整、未经篡改的数据。</p><h3 id="身份认证的实现"><a href="#身份认证的实现" class="headerlink" title="身份认证的实现"></a>身份认证的实现</h3><h4 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h4><p>利用<strong>私钥</strong>加密<strong>摘要</strong>就能实现数字签名</p><p>因为被私钥加密的摘要只能被对应的公钥解密，这就验证了消息发送者的身份</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="数字签名.png" alt="数字签名.png" title>                </div>                <div class="image-caption">数字签名.png</div>            </figure><h4 id="数字证书和-CA"><a href="#数字证书和-CA" class="headerlink" title="数字证书和 CA"></a>数字证书和 CA</h4><p>如何判断公钥的来源？如何防止黑客伪造公钥？</p><p>CA(Certificate Authority): 证书认证机构，作为一个第三方，用自己的私钥来给公钥签名。把公钥和相关信息一起加密达成一个包，形成了<strong>数字证书</strong>。</p><p>客户端的”证书管理器“中有”受信任的根证书颁发机构“列表。客户端会根据这张表，查看解开数字证书的公钥是否在列表之中。如果在就用它解开数字证书，如果数字证书中记录的网址与正在浏览的网址不一致，就说明证书可能被冒用，浏览器会发出警告。</p><h1 id="TLS"><a href="#TLS" class="headerlink" title="TLS"></a>TLS</h1><p>SSL 即安全套阶层（Secure Socket Layer）,在 OSI 模型中处于第五层（会话层）。SSL 发展到 v3 时已经被证明了是一个非常好的安全通信协议，于是 IETF 把它改名为 TLS（Transport Layer Security），正式标准化，版本号从 1.0 开始算起，实际上 TLS1.0 就是 SSLv3.1。</p><h2 id="抓包-TLS-1-2-连接过程"><a href="#抓包-TLS-1-2-连接过程" class="headerlink" title="抓包 TLS 1.2 连接过程"></a>抓包 TLS 1.2 连接过程</h2><p>下面抓包百度，看看连接建立过程。开始用 Chrome 访问，Chrome 似乎做了一些神奇的优化？一些包抓不到。用 FireFox 就好了。</p><ol><li>TCP 连接建立后，浏览器首先会发送一个 Client Hello 消息。消息包括版本号、支持的密码套件、还有一个随机数。</li></ol><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="ClientHello.jpg" alt="ClientHello.jpg" title>                </div>                <div class="image-caption">ClientHello.jpg</div>            </figure><ol start="2"><li>服务器收到 Client Hello 后，返回一个 Server Hello。会返回版本号、从密码套件中选择一个、一个随机数。</li></ol><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="ServerHello.jpg" alt="ServerHello.jpg" title>                </div>                <div class="image-caption">ServerHello.jpg</div>            </figure><p>可以看出百度选择了用 ECDHE 做密钥交换算法。ECDHE 是 ECC 的一个子算法，基于椭圆曲线离散对数。</p><ol start="3"><li>服务器把证书发送给客户端。客户端可以解析证书，取出服务器的公钥。</li></ol><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="certificate.jpg" alt="certificate.jpg" title>                </div>                <div class="image-caption">certificate.jpg</div>            </figure><ol start="4"><li>服务端发送 Server Key Exchange 消息，发送椭圆曲线的公钥（Server Params），再加上自己的私钥签名。客户端可以验证这个消息来自于服务器。</li></ol><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="SKexchange.jpg" alt="SKexchange.jpg" title>                </div>                <div class="image-caption">SKexchange.jpg</div>            </figure><ol start="5"><li>发送 Server Hello Done 消息。</li></ol><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="ServerHelloDone.png" alt="ServerHelloDone.png" title>                </div>                <div class="image-caption">ServerHelloDone.png</div>            </figure><ol start="6"><li>客户端生成一个椭圆曲线公钥（Client Params），用 Client Key Exchange 消息发送给服务器。 </li></ol><p><img src="CKE.png" alt="CKE.png"></p><ol start="7"><li><p>客户端和服务器都拿到了 Client Params、Server Params，用 ECDHE 算法，算出 Pre-Master。黑客即便拿到了前面两个参数也算不出 Pre-Master（why？）。客户端和服务器用 Client Random、Server Random、Pre-Master 生成用于加密会话的主密钥 Master Secret，由于 Pre-Master 是保密的，Master Secret 也是保密的。</p></li><li><p>客户端发送 Change Cipher Spec。再发送一个 Finished 消息，把之前所有发送的数据做个摘要，再加密发送给对方做个验证。服务器同样发送 Change Cipher Spec 和 finish。双方都验证加密、解密 OK，握手结束。后面就收发被加密的 HTTP 请求和响应。</p><p><img src="finish.png" alt="finish.png"></p><p><strong>整体流程：</strong></p><p><img src="%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B.png" alt="整体流程.png"></p><p>上面这个过程其实是<strong>单向认证</strong>的握手过程，只认证了服务器的身份（通过服务器证书），而没有认证客户端的身份。因为单向认证过后已经建立了安全通信，可以通过账号、密码来确认用户身份。</p><p>银行的 U 盾就是给用户颁发客户端证书，实现双向认证。</p></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;HTTPS&quot;&gt;&lt;a href=&quot;#HTTPS&quot; class=&quot;headerlink&quot; title=&quot;HTTPS&quot;&gt;&lt;/a&gt;HTTPS&lt;/h1&gt;&lt;p&gt;HTTP 是基于明文传输的，不具有安全性。很容易被攻击者截获、更改。HTTPS 协议是基于 SSL/TLS 协议上的
+      
+    
+    </summary>
+    
+    
+      <category term="HTTPS" scheme="https://firecarrrr.github.io/tags/HTTPS/"/>
+    
+  </entry>
   
   <entry>
     <title>Reactor</title>
