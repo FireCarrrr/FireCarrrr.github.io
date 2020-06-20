@@ -28,13 +28,13 @@
 <meta property="og:site_name" content="YUYUYU&#39;s Blog">
 <meta property="og:description" content="MySQL 日志总结一下 MySQL （innoDB 存储引擎）的三种日志。  redo log：InnoDB 特有的物理日志 bin log：Server 层的逻辑日志 undo log：存放数据被修改前的值  Buffer PoolBuffer Pool 是 InnoDB 在内存中缓存被访问表和索引的地方。Buffer Pool 可以使得经常被访问的数据直接在内存中被处理，从而加快处理速度。缓">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="d:/Blog/blog/source/_posts/MySQL日志/redo-log.png">
-<meta property="og:image" content="d:/Blog/blog/source/_posts/MySQL日志/update.png">
-<meta property="og:updated_time" content="2020-06-20T09:24:49.081Z">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/19/MySQL日志/redo-log.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/19/MySQL日志/update.png">
+<meta property="og:updated_time" content="2020-06-20T09:33:53.768Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL日志">
 <meta name="twitter:description" content="MySQL 日志总结一下 MySQL （innoDB 存储引擎）的三种日志。  redo log：InnoDB 特有的物理日志 bin log：Server 层的逻辑日志 undo log：存放数据被修改前的值  Buffer PoolBuffer Pool 是 InnoDB 在内存中缓存被访问表和索引的地方。Buffer Pool 可以使得经常被访问的数据直接在内存中被处理，从而加快处理速度。缓">
-<meta name="twitter:image" content="d:/Blog/blog/source/_posts/MySQL日志/redo-log.png">
+<meta name="twitter:image" content="https://firecarrrr.github.io/2020/06/19/MySQL日志/redo-log.png">
     
         <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
     
@@ -221,9 +221,9 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\source\_posts\MySQL日志\redo-log.png" alt title>
+                    <img src="redo-log.png" alt="redo-log.png" title>
                 </div>
-                <div class="image-caption"></div>
+                <div class="image-caption">redo-log.png</div>
             </figure>
 
 <p>如上图所示，write pos 代表当前可写的位置，checkpoint 是当前要擦除的位置。如果 write pos 追上了 checkpoint ，代表 redo log 已经写满了，这时候新的更新语句不能够再执行，需要停下来先擦掉一些数据，把 checkpoint 向前推进一些，腾出可写空间。</p>
@@ -243,9 +243,9 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\source\_posts\MySQL日志\update.png" alt title>
+                    <img src="update.png" alt="update.png" title>
                 </div>
-                <div class="image-caption"></div>
+                <div class="image-caption">update.png</div>
             </figure>
 
 <p>在写 redo log 时采用了两阶段提交，为的是避免通过 redo log 恢复数据和通过 binlog 恢复数据出现不一致。如果先写 redo log，然后系统崩了，那么通过 binlog 恢复的数据就会少一个操作。反之，通过 redo log 恢复，就会少一个操作。</p>
@@ -270,7 +270,7 @@
     <div class="content">
         
 <span class="post-time">
-    Last updated: <time datetime="2020-06-20T09:24:49.081Z" itemprop="dateUpdated">2020-06-20 17:24:49</time>
+    Last updated: <time datetime="2020-06-20T09:33:53.768Z" itemprop="dateUpdated">2020-06-20 17:33:53</time>
 </span><br>
 
 
