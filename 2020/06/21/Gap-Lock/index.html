@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Gap Lock | YUYUYU&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="MySQL">
+    <meta name="description" content="幻读幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。 幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。 快照读与当前读快照读在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVCC 实">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gap Lock">
+<meta property="og:url" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/index.html">
+<meta property="og:site_name" content="YUYUYU&#39;s Blog">
+<meta property="og:description" content="幻读幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。 幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。 快照读与当前读快照读在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVCC 实">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/example.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/example3.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/gap.png">
+<meta property="og:image" content="d:/Blog/blog/source/_posts/Gap-Lock/gaplockpro.png">
+<meta property="og:updated_time" content="2020-06-21T09:32:06.513Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Gap Lock">
+<meta name="twitter:description" content="幻读幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。 幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。 快照读与当前读快照读在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVCC 实">
+<meta name="twitter:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/example.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/images/car.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">YUYUYU</h5>
+          <a href="mailto:gong.2008@outlook.com" title="gong.2008@outlook.com" class="mail">gong.2008@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/">
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Java">
+                <i class="icon icon-lg icon-coffee"></i>
+                Java
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/MySQL">
+                <i class="icon icon-lg icon-database"></i>
+                MySQL
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/FireCarrrr" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Gap Lock</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Gap Lock</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-06-21T06:39:06.000Z" itemprop="datePublished" class="page-time">
+  2020-06-21
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#幻读"><span class="post-toc-number">1.</span> <span class="post-toc-text">幻读</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#快照读与当前读"><span class="post-toc-number">2.</span> <span class="post-toc-text">快照读与当前读</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#快照读"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">快照读</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#当前读"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">当前读</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#幻读的问题"><span class="post-toc-number">3.</span> <span class="post-toc-text">幻读的问题</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#间隙锁"><span class="post-toc-number">4.</span> <span class="post-toc-text">间隙锁</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#间隙锁可能导致的问题"><span class="post-toc-number">4.1.</span> <span class="post-toc-text">间隙锁可能导致的问题</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Gap-Lock" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Gap Lock</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-06-21 14:39:06" datetime="2020-06-21T06:39:06.000Z" itemprop="datePublished">2020-06-21</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style="display:none">
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h1><p>幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。</p>
+<p>幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。</p>
+<h1 id="快照读与当前读"><a href="#快照读与当前读" class="headerlink" title="快照读与当前读"></a>快照读与当前读</h1><h2 id="快照读"><a href="#快照读" class="headerlink" title="快照读"></a>快照读</h2><p>在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVCC 实现的快照读，自然不会出现幻读的问题。</p>
+<h2 id="当前读"><a href="#当前读" class="headerlink" title="当前读"></a>当前读</h2><p>当前读是指加锁的读取和 DML 操作。例如，使用下面两条查询语句可以实现当前读：</p>
+<ul>
+<li><strong>select … for share (for share mode)</strong> ：这条语句是给 select 查询到的行加上读锁，其它的事务可以读到这些行，但是没办法修改，直到你的事务提交。（走全表扫描也是会被锁所有行的）。如果你执行这条语句的时候，还有其它未提交的事务对这些行进行了修改，那么你的查询就必须等到那些事务提交过后再执行。</li>
+<li><strong>select … for update</strong>：这条语句给查询中遇到的行加上排它锁，也就是说如果走全表扫描，整个表的行都会被锁。其它事务如果在这些语句上执行更新操作或者 select … for share 会被阻塞。在某些隔离级别下读这些数据也会被阻塞。（RR 隔离级别会忽略 read view 上出现的任何记录上的锁）。</li>
+</ul>
+<h1 id="幻读的问题"><a href="#幻读的问题" class="headerlink" title="幻读的问题"></a>幻读的问题</h1><p>创建一个表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`t`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`c`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`d`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>),</span><br><span class="line">  <span class="keyword">KEY</span> <span class="string">`c`</span> (<span class="string">`c`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>),(<span class="number">5</span>,<span class="number">5</span>,<span class="number">5</span>),</span><br><span class="line">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>),(<span class="number">15</span>,<span class="number">15</span>,<span class="number">15</span>),(<span class="number">20</span>,<span class="number">20</span>,<span class="number">20</span>),(<span class="number">25</span>,<span class="number">25</span>,<span class="number">25</span>);</span><br></pre></td></tr></table></figure>
+
+<p>有 id 和 c, d 三行。id 是主键，c 上加了索引。</p>
+<p><strong>如果 for update 只在 id = 5 这一行加锁：</strong></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="example.png" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<ol>
+<li><p>T1 时刻，把所有 d = 5 的行加锁。查询结果应该是 (5,5,5)</p>
+</li>
+<li><p>T2 时刻，id = 0 的那一行数据，变成了 (0,5,5)</p>
+</li>
+<li><p>T3 时刻，查询结果应该是 (0,5,5)，(5,5,5)</p>
+</li>
+<li><p>T4 时刻，插入了一条数据 (1,1,5)，又改成了（1,5,5）</p>
+</li>
+<li><p>T5 时刻，查询结果是 (0,5,5), (1,5,5), (5,5,5)</p>
+</li>
+</ol>
+<p>分析一下：</p>
+<ul>
+<li>T1 时刻，session A 给 id = 5 这一行加了锁，并没有给 id = 0 这一行加锁，所以 T2 这个 update 语句可以执行。这样就破坏了<strong>seesion A 给所有 d = 5 的行加锁的语义。</strong></li>
+<li>同样的道理，session C 也破坏了 session A 的加锁语义。</li>
+</ul>
+<p>所以幻读会造成<strong>语义上的问题</strong>。</p>
+<p>幻读还可能造成<strong>数据一致性</strong>上的问题。数据一致性包括数据库内部数据状态的一致性还包括数据和日志在逻辑上的一致性。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="example3.png" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<ol>
+<li>T1 时刻，id = 5 这一行变成了 (5,5,100)，这个结果最终在 T6 时刻正式提交。</li>
+<li>T2 时刻，id = 0 这一行变成了 (0,5,5)。</li>
+<li>T4 时刻，表中多了一行 (1,5,5)。</li>
+</ol>
+<p>看一下 binlog 中的内容</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* T2 时刻 session B 提交 */</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,0,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">0</span>; <span class="comment">/*(0,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* T4 时刻 session C 提交 */</span></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>,<span class="number">5</span>); <span class="comment">/*(1,1,5)*/</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> c=<span class="number">5</span> <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span>; <span class="comment">/*(1,5,5)*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* T6 时刻 session A 提交 */</span></span><br><span class="line"><span class="keyword">update</span> t <span class="keyword">set</span> d=<span class="number">100</span> <span class="keyword">where</span> d=<span class="number">5</span>;<span class="comment">/*所有d=5的行，d改成100*/</span></span><br></pre></td></tr></table></figure>
+
+<p>显然，通过这个 binlog 去恢复一个库或者克隆一个库，运行的结果都是和库里的数据不一致的。</p>
+<p>即便是我们在 T1 时刻把扫描范围内遇到的行都加上锁，Session B 会被阻塞，但是 Session C 的插入语句，由于被插入语句还不存在，不存在的语句没法加锁，也就是说可以插入成功和修改成功，这样 binlog 里的顺序变成了 Session C -&gt; Session A -&gt; Session B。这样用 binlog 去恢复一个库，Session B 的执行结果没问题了，Session C 的结果还是会变成 (1,5,100)。这就是<strong>幻读导致的问题</strong>。</p>
+<h1 id="间隙锁"><a href="#间隙锁" class="headerlink" title="间隙锁"></a>间隙锁</h1><p>产生幻读的原因是行锁只能锁住已经存在的行，而插入操作是在已经存在数据的”间隙“做的操作。</p>
+<p>比如上面例子的表中，最开始插入了 6 条数据，在表的主键索引上就形成了 7 个间隙。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="gap.png" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<p>这样在执行 select * from t where d = 5 for update 的时候，就不止给数据库中已经有的 6 个记录加锁（d 上没有索引，走全表扫描），还需要同时加 7 个间隙锁。这样就能确保无法插入新的记录。</p>
+<p>也就是说不仅给行加上了行锁，还给<strong>行两边的间隙</strong>加上了间隙锁。</p>
+<p>间隙锁锁定的是<strong>其他事务往这个间隙中插入记录</strong>这个操作。</p>
+<p>间隙锁和行锁合成为 <strong>next-key lock</strong></p>
+<p>next-key-lock 是一个前开后闭的区间</p>
+<p>我们的表 t 初始化以后，如果用 select * from t for update 要把整个表所有记录锁起来，就形成了 7 个 next-key lock，分别是 (-∞,0]、(0,5]、(5,10]、(10,15]、(15,20]、(20, 25]、(25, +supremum]。</p>
+<h2 id="间隙锁可能导致的问题"><a href="#间隙锁可能导致的问题" class="headerlink" title="间隙锁可能导致的问题"></a>间隙锁可能导致的问题</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="D:\Blog\blog\source\_posts\Gap-Lock\gaplockpro.png" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<ol>
+<li>Session A 启动事务，由于 id = 9 这一行不存在，加上一个 (5, 10) 的间隙锁。</li>
+<li>Session B 启动，同样加了一个 (5, 10) 的间隙锁。</li>
+<li>Session B 执行 insert 语句，被 Session A 的间隙锁拦住。</li>
+<li>Session A 执行 insert 语句，被 Session B 的间隙锁拦住。</li>
+<li>形成死锁。</li>
+</ol>
+<p>间隙锁增大了锁的范围，会降低并发度。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last updated: <time datetime="2020-06-21T09:32:06.513Z" itemprop="dateUpdated">2020-06-21 17:32:06</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2020/06/21/Gap-Lock/" target="_blank" rel="external">https://firecarrrr.github.io/2020/06/21/Gap-Lock/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="https://firecarrrr.github.io">
+            <img src="/images/car.jpg" alt="YUYUYU">
+            YUYUYU
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/&title=《Gap Lock》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/&title=《Gap Lock》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/06/21/Gap-Lock/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Gap Lock》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/06/19/MySQL日志/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">MySQL日志</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style="display:none">
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style="display:none">
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>YUYUYU &copy; 2015 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/&title=《Gap Lock》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/&title=《Gap Lock》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/06/21/Gap-Lock/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Gap Lock》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/06/21/Gap-Lock/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2020/06/21/Gap-Lock/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
