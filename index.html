@@ -105,9 +105,16 @@
             </li>
         
             <li class="waves-block waves-effect">
-              <a href="/categories/RPC">
+              <a href="/categories/Distributed_System">
                 <i class="icon icon-lg icon-code"></i>
-                RPC
+                Distributed System
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Basic">
+                <i class="icon icon-lg icon-book"></i>
+                Basic
               </a>
             </li>
         
@@ -135,7 +142,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -169,13 +176,170 @@
     <ul class="post-list">
     
         <li class="post-list-item fade">
+            <article id="post-TCP-连接的建立和拆除" class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-06-29 21:33:21" datetime="2020-06-29T13:33:21.000Z" itemprop="datePublished">2020-06-29</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Basic/">Basic</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/06/29/TCP-连接的建立和拆除/">TCP 连接的建立和拆除</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        TCP 连接建立的过程三次握手
+                
+                    
+                    
+                
+                
+            
+
+
+客户端向服务端发送报文，将 SYN 标志位置 1，客户端随机产生一个初始序列号   client_isn 。
+服务器收到来自客户端的 SYN 报文...
+    
+
+        <a href="/2020/06/29/TCP-连接的建立和拆除/" class="post-more waves-effect waves-button">
+            Continue reading...
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/计算机网络/">计算机网络</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-redis-集群" class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-06-29 21:32:45" datetime="2020-06-29T13:32:45.000Z" itemprop="datePublished">2020-06-29</time>
+
+        
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/06/29/redis-集群/">数据分片与 redis 集群</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        数据分片数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？
+顺序分片（范围分片）最直观的一种分片方式。假设数据范围是 1100，范围分片就是 133 落到第一个节点，3466 落到第二个节点，67100 落到第三个节点。
+顺序分片的有点是能做顺序访问
+范围分片的问题：
+
+面对顺序写的时候可能存在热点
+数据可能是倾斜的，比如总是倾向于访问某个...
+    
+
+        <a href="/2020/06/29/redis-集群/" class="post-more waves-effect waves-button">
+            Continue reading...
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-MySQL-慢查询" class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-06-29 21:31:56" datetime="2020-06-29T13:31:56.000Z" itemprop="datePublished">2020-06-29</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/06/29/MySQL-慢查询/">MySQL 慢查询</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        获取有性能问题的 SQL慢查询日志与慢查询日志有关的配置：
+
+slow_query_log：启动停止记录慢查询日志
+slow_query_log_file：指定慢查询日志存储路径及文件
+long_query_time：指定记录慢查日志 SQL 执行时间的阈值（单位：秒）
+log_queries_not_using_indexes：是否记录未使用索引的 SQL（和上面那个阈值无关，只要没有用到...
+    
+
+        <a href="/2020/06/29/MySQL-慢查询/" class="post-more waves-effect waves-button">
+            Continue reading...
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SQL/">SQL</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
             <article id="post-RPC-原理" class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
         <time class="post-time" title="2020-06-23 14:42:08" datetime="2020-06-23T06:42:08.000Z" itemprop="datePublished">2020-06-23</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/RPC/">RPC</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Distributed-System/">Distributed System</a></li></ul>
 
 
 
@@ -202,7 +366,7 @@
     
 
         <a href="/2020/06/23/RPC-原理/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -243,7 +407,7 @@ JDK 9 的实现JDK 9 中，char[] 被改变成了 byte[]。并且新增了一个
     
 
         <a href="/2020/06/22/java-String/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -283,7 +447,7 @@ JDK 9 的实现JDK 9 中，char[] 被改变成了 byte[]。并且新增了一个
     
 
         <a href="/2020/06/21/Gap-Lock/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -335,7 +499,7 @@ Buffer PoolBuffer Pool 是 InnoDB 在内存中缓存被访问表和索引的地�
     
 
         <a href="/2020/06/19/MySQL日志/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -378,7 +542,7 @@ Spring 事务的传播行为有哪些？通过实验的方式来验证一下 Spr
     
 
         <a href="/2020/06/18/Transaction/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -421,7 +585,7 @@ Spring 事务的传播行为有哪些？通过实验的方式来验证一下 Spr
     
 
         <a href="/2020/05/07/Dynamic-Proxy/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -464,150 +628,7 @@ ApplicationContext: ApplicationContext 在 BeanFactory 的基础上构建，是�
     
 
         <a href="/2020/05/04/SpringBean/" class="post-more waves-effect waves-button">
-            阅读全文…
-        </a>
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-TLS" class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2020-04-22 21:01:08" datetime="2020-04-22T13:01:08.000Z" itemprop="datePublished">2020-04-22</time>
-
-        
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2020/04/22/TLS/">HTTPS与TLS</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        HTTPSHTTP 是基于明文传输的，不具有安全性。很容易被攻击者截获、更改。HTTPS 协议是基于 SSL/TLS 协议上的安全的传输协议。
-如何定义安全？
-机密性：数据是被加密的
-完整性：数据是不可篡改的
-身份认证：能够确定通信方的身份
-
-机密性的实现对称加密加密和解密使用同一个密钥
-
-                
-                    
-             ...
-    
-
-        <a href="/2020/04/22/TLS/" class="post-more waves-effect waves-button">
-            阅读全文…
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTPS/">HTTPS</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-Reactor" class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2020-04-15 18:51:16" datetime="2020-04-15T10:51:16.000Z" itemprop="datePublished">2020-04-15</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Java/">Java</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2020/04/15/Reactor/">Reactor</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        Reactor 模式 NIO 这部分一直迷迷糊糊的，想借学 Reactor 这部分的时候来谈一下。
-IO所谓I/O就是内存和外部设备之间拷贝数据的过程。以网络 I/O为例，也就是用户程序从网卡读取数据和向网卡写数据的过程。这个过程可以被分为两个步骤：
-
-内核从网卡把数据拷贝到内核缓存
-数据从内核读取到用户程序地址空间
-
-各种 I/O 模型的区别在于：实现这两个步骤的方式不一样
-同步阻塞 I/...
-    
-
-        <a href="/2020/04/15/Reactor/" class="post-more waves-effect waves-button">
-            阅读全文…
-        </a>
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-mysql-transaction" class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-08-04 16:25:20" datetime="2019-08-04T08:25:20.000Z" itemprop="datePublished">2019-08-04</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/08/04/mysql-transaction/">MySQL事务隔离和MVCC</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        MySQL事务隔离和MVCC同样，把最近看的事务和锁的部分总结一下，这部分的确东西蛮多的。
-MySQL事务其实事务这东西说白了就是一组操作的集合。我们希望数据库系统能够保证这一组操作数据一致且操作独立。数据一致就是说事务在提交的时候保证事务内的所有操作都能成功完成，并且永久生效。操作独立是说多个同时执行的事务之间应该是相互独立，互不影响的。
-用标准一点的说法，还就是老生常谈的ACID，感觉A...
-    
-
-        <a href="/2019/08/04/mysql-transaction/" class="post-more waves-effect waves-button">
-            阅读全文…
+            Continue reading...
         </a>
     </div>
     
@@ -644,7 +665,7 @@ MySQL事务其实事务这东西说白了就是一组操作的集合。我们希
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">

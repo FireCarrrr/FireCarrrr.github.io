@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>数据分片与 redis 集群 | YUYUYU&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="redis">
+    <meta name="description" content="数据分片数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？ 顺序分片（范围分片）最直观的一种分片方式。假设数据范围是 1100，范围分片就是 133 落到第一个节点，3466 落到第二个节点，67100 落到第三个节点。 顺序分片的有点是能做顺序访问 范围分片的问题：  面对顺序写的时候可能存在热点 数据可能是倾斜的，比如总是倾向于访问某个范围内">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据分片与 redis 集群">
+<meta property="og:url" content="https://firecarrrr.github.io/2020/06/29/redis-集群/index.html">
+<meta property="og:site_name" content="YUYUYU&#39;s Blog">
+<meta property="og:description" content="数据分片数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？ 顺序分片（范围分片）最直观的一种分片方式。假设数据范围是 1100，范围分片就是 133 落到第一个节点，3466 落到第二个节点，67100 落到第三个节点。 顺序分片的有点是能做顺序访问 范围分片的问题：  面对顺序写的时候可能存在热点 数据可能是倾斜的，比如总是倾向于访问某个范围内">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/29/redis-集群/一致性hash.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/29/redis-集群/扩容后.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/29/redis-集群/槽.png">
+<meta property="og:updated_time" content="2020-06-29T13:35:24.480Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据分片与 redis 集群">
+<meta name="twitter:description" content="数据分片数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？ 顺序分片（范围分片）最直观的一种分片方式。假设数据范围是 1100，范围分片就是 133 落到第一个节点，3466 落到第二个节点，67100 落到第三个节点。 顺序分片的有点是能做顺序访问 范围分片的问题：  面对顺序写的时候可能存在热点 数据可能是倾斜的，比如总是倾向于访问某个范围内">
+<meta name="twitter:image" content="https://firecarrrr.github.io/2020/06/29/redis-集群/一致性hash.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/images/car.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">YUYUYU</h5>
+          <a href="mailto:gong.2008@outlook.com" title="gong.2008@outlook.com" class="mail">gong.2008@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/">
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Java">
+                <i class="icon icon-lg icon-coffee"></i>
+                Java
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/MySQL">
+                <i class="icon icon-lg icon-database"></i>
+                MySQL
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Distributed_System">
+                <i class="icon icon-lg icon-code"></i>
+                Distributed System
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Basic">
+                <i class="icon icon-lg icon-book"></i>
+                Basic
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/FireCarrrr" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">数据分片与 redis 集群</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">数据分片与 redis 集群</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-06-29T13:32:45.000Z" itemprop="datePublished" class="page-time">
+  2020-06-29
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#数据分片"><span class="post-toc-number">1.</span> <span class="post-toc-text">数据分片</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#顺序分片（范围分片）"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">顺序分片（范围分片）</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Hash-分片"><span class="post-toc-number">1.2.</span> <span class="post-toc-text">Hash 分片</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#一致性-Hash"><span class="post-toc-number">1.3.</span> <span class="post-toc-text">一致性 Hash</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#redis-虚拟槽"><span class="post-toc-number">1.4.</span> <span class="post-toc-text">redis 虚拟槽</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#redis-集群搭建"><span class="post-toc-number">2.</span> <span class="post-toc-text">redis 集群搭建</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#cluster-meet"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">cluster meet</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#分配槽"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">分配槽</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-redis-集群" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">数据分片与 redis 集群</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-06-29 21:32:45" datetime="2020-06-29T13:32:45.000Z" itemprop="datePublished">2020-06-29</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style="display:none">
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="数据分片"><a href="#数据分片" class="headerlink" title="数据分片"></a>数据分片</h1><p>数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？</p>
+<h2 id="顺序分片（范围分片）"><a href="#顺序分片（范围分片）" class="headerlink" title="顺序分片（范围分片）"></a>顺序分片（范围分片）</h2><p>最直观的一种分片方式。假设数据范围是 1<del>100，范围分片就是 1</del>33 落到第一个节点，34<del>66 落到第二个节点，67</del>100 落到第三个节点。</p>
+<p>顺序分片的有点是能做顺序访问</p>
+<p><strong>范围分片的问题：</strong></p>
+<ul>
+<li>面对顺序写的时候可能存在热点</li>
+<li>数据可能是倾斜的，比如总是倾向于访问某个范围内的数据</li>
+</ul>
+<h2 id="Hash-分片"><a href="#Hash-分片" class="headerlink" title="Hash 分片"></a>Hash 分片</h2><p>Hash 分片就是把数据 Hash 一下，然后对节点数量取余得到应该放哪儿。</p>
+<p>Hash 分片最大的问题在于当节点需要拓展时，涉及到大量的数据迁移。</p>
+<h2 id="一致性-Hash"><a href="#一致性-Hash" class="headerlink" title="一致性 Hash"></a>一致性 Hash</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="一致性hash.png" alt="image-20200628221645619" title>
+                </div>
+                <div class="image-caption">image-20200628221645619</div>
+            </figure>
+
+<p>假设当前有 4 个节点，把这 4 个节点放在一个环上，这个环是从 0 到 hash 函数能够生成的最大值。</p>
+<p>每个键被 hash 后，顺时针查找最近的节点，那这个键就应该落在这个节点上。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="扩容后.png" alt="image-20200628222036769" title>
+                </div>
+                <div class="image-caption">image-20200628222036769</div>
+            </figure>
+
+<p>假设新增一个节点 5，位于节点 2 和节点 4 之间，可以看到此时，这个变更的影响范围就被局限在了很小的一段上。</p>
+<h2 id="redis-虚拟槽"><a href="#redis-虚拟槽" class="headerlink" title="redis 虚拟槽"></a>redis 虚拟槽</h2><p>redis 集群将整个数据库分成了 16384 个槽（slot）。数据库中的每个键都属于 16384 个槽中的一个，集群中的每个节点可以处理 0 个或者 16384 个槽。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="槽.png" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<p>槽是 redis 集群管理数据的基本单位，集群伸缩就是槽和数据在节点之间的移动。</p>
+<h1 id="redis-集群搭建"><a href="#redis-集群搭建" class="headerlink" title="redis 集群搭建"></a>redis 集群搭建</h1><h2 id="cluster-meet"><a href="#cluster-meet" class="headerlink" title="cluster meet"></a>cluster meet</h2><p>首先需要把配置文件里的 cluster-enabled 设置为 yes 以开启集群模式。</p>
+<p>启动节点后，不同机器上的节点之间初跑起来的时候都是独立的，需要通过</p>
+<blockquote>
+<p>cluster meet ip port</p>
+</blockquote>
+<p>命令来使服务器之间握手连接。</p>
+<h2 id="分配槽"><a href="#分配槽" class="headerlink" title="分配槽"></a>分配槽</h2><blockquote>
+<p>cluster addslots [slot]</p>
+</blockquote>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last updated: <time datetime="2020-06-29T13:35:24.480Z" itemprop="dateUpdated">2020-06-29 21:35:24</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2020/06/29/redis-集群/" target="_blank" rel="external">https://firecarrrr.github.io/2020/06/29/redis-集群/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="https://firecarrrr.github.io">
+            <img src="/images/car.jpg" alt="YUYUYU">
+            YUYUYU
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/06/29/redis-集群/&title=《数据分片与 redis 集群》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/06/29/redis-集群/&title=《数据分片与 redis 集群》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/06/29/redis-集群/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《数据分片与 redis 集群》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/06/29/redis-集群/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/06/29/redis-集群/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2020/06/29/TCP-连接的建立和拆除/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">TCP 连接的建立和拆除</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/06/29/MySQL-慢查询/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">MySQL 慢查询</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style="display:none">
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style="display:none">
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>YUYUYU &copy; 2015 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/06/29/redis-集群/&title=《数据分片与 redis 集群》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/06/29/redis-集群/&title=《数据分片与 redis 集群》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/06/29/redis-集群/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《数据分片与 redis 集群》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/06/29/redis-集群/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/06/29/redis-集群/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2020/06/29/redis-集群/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

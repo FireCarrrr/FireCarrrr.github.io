@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://firecarrrr.github.io/"/>
-  <updated>2020-06-23T11:52:48.089Z</updated>
+  <updated>2020-06-29T13:34:47.325Z</updated>
   <id>https://firecarrrr.github.io/</id>
   
   <author>
@@ -17,11 +17,85 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>TCP 连接的建立和拆除</title>
+    <link href="https://firecarrrr.github.io/2020/06/29/TCP-%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%BB%BA%E7%AB%8B%E5%92%8C%E6%8B%86%E9%99%A4/"/>
+    <id>https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/</id>
+    <published>2020-06-29T13:33:21.000Z</published>
+    <updated>2020-06-29T13:34:47.325Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="TCP-连接建立的过程"><a href="#TCP-连接建立的过程" class="headerlink" title="TCP 连接建立的过程"></a>TCP 连接建立的过程</h1><h2 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h2><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="三次握手.png" alt title>                </div>                <div class="image-caption"></div>            </figure><ol><li>客户端向服务端发送报文，将 SYN 标志位置 1，客户端随机产生一个初始序列号   client_isn 。</li><li>服务器收到来自客户端的 SYN 报文，<strong>会为该 TCP 连接分配缓存和变量</strong>。服务器向客户端发送确认报文，SYN 标志位置 1，随机生成服务器的初始序列号 server_isn ，将首部确认号字段设置为 client_isn + 1。</li><li>收到服务器的 SYNACK 报文后，<strong>客户端为该连接分配缓存和变量</strong>。客户端向主机发送另一个报文，确认号设置为 server_isn + 1，SYN 设置为 0，序号设置为 client_isn + 1。<strong>这个报文可以携带数据。</strong></li></ol><h3 id="为什么需要三次握手？"><a href="#为什么需要三次握手？" class="headerlink" title="为什么需要三次握手？"></a>为什么需要三次握手？</h3><ul><li>第一次报文发送，服务端如果收到了客户端的报文，此时，服务端知道客户端到服务端的连接是可用的。</li><li>第二次报文发送，如果客户端收到了服务端的报文，此时，客户端知道了客户端到服务端和服务端到客户端的连接时可用的。</li><li>第三次报文发送，如果服务端收到了连接，此时，服务端就知道服务端到客户端的连接也是可用的。客户端和服务端就都能够确认这个链路双向都是可用的。</li></ul><h3 id="为什么客户端和服务端的初始序列号必须随机生成？"><a href="#为什么客户端和服务端的初始序列号必须随机生成？" class="headerlink" title="为什么客户端和服务端的初始序列号必须随机生成？"></a>为什么客户端和服务端的初始序列号必须随机生成？</h3><p>假设有三个角色 A 代表服务器，B 代表客户端，C 代表攻击者。如果以 B 的身份伪造一个请求发送给 A，A 会给 B 发送一个 SYNACK 报文，假设此时 B 被 C 搞得处于异常状态。如果这个 SYNACK 报文中的 server_isn 是固定的，那么 C 就很容易猜测出这个 server_isn，然后构造确认号发送报文给 A。</p><h2 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h2><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="四次挥手.png" alt title>                </div>                <div class="image-caption"></div>            </figure><p>参与一条 TCP 连接的两个进程中任何一个都能终止该连接。当某客户打算关闭连接：</p><ol><li>客户应用进程给服务器发送一个报文，将 FIN 标志位置 1。</li><li>服务器会送一个确认报文，ACK 标志位置 1。</li><li>服务器发送它的终止报文，FIN 标志位置 1。</li><li>客户端对服务器的终止报文进行确认，ACK 置 1。</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;TCP-连接建立的过程&quot;&gt;&lt;a href=&quot;#TCP-连接建立的过程&quot; class=&quot;headerlink&quot; title=&quot;TCP 连接建立的过程&quot;&gt;&lt;/a&gt;TCP 连接建立的过程&lt;/h1&gt;&lt;h2 id=&quot;三次握手&quot;&gt;&lt;a href=&quot;#三次握手&quot; class=&quot;
+      
+    
+    </summary>
+    
+      <category term="Basic" scheme="https://firecarrrr.github.io/categories/Basic/"/>
+    
+    
+      <category term="计算机网络" scheme="https://firecarrrr.github.io/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>数据分片与 redis 集群</title>
+    <link href="https://firecarrrr.github.io/2020/06/29/redis-%E9%9B%86%E7%BE%A4/"/>
+    <id>https://firecarrrr.github.io/2020/06/29/redis-集群/</id>
+    <published>2020-06-29T13:32:45.000Z</published>
+    <updated>2020-06-29T13:35:24.480Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="数据分片"><a href="#数据分片" class="headerlink" title="数据分片"></a>数据分片</h1><p>数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？</p><h2 id="顺序分片（范围分片）"><a href="#顺序分片（范围分片）" class="headerlink" title="顺序分片（范围分片）"></a>顺序分片（范围分片）</h2><p>最直观的一种分片方式。假设数据范围是 1<del>100，范围分片就是 1</del>33 落到第一个节点，34<del>66 落到第二个节点，67</del>100 落到第三个节点。</p><p>顺序分片的有点是能做顺序访问</p><p><strong>范围分片的问题：</strong></p><ul><li>面对顺序写的时候可能存在热点</li><li>数据可能是倾斜的，比如总是倾向于访问某个范围内的数据</li></ul><h2 id="Hash-分片"><a href="#Hash-分片" class="headerlink" title="Hash 分片"></a>Hash 分片</h2><p>Hash 分片就是把数据 Hash 一下，然后对节点数量取余得到应该放哪儿。</p><p>Hash 分片最大的问题在于当节点需要拓展时，涉及到大量的数据迁移。</p><h2 id="一致性-Hash"><a href="#一致性-Hash" class="headerlink" title="一致性 Hash"></a>一致性 Hash</h2><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="一致性hash.png" alt="image-20200628221645619" title>                </div>                <div class="image-caption">image-20200628221645619</div>            </figure><p>假设当前有 4 个节点，把这 4 个节点放在一个环上，这个环是从 0 到 hash 函数能够生成的最大值。</p><p>每个键被 hash 后，顺时针查找最近的节点，那这个键就应该落在这个节点上。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="扩容后.png" alt="image-20200628222036769" title>                </div>                <div class="image-caption">image-20200628222036769</div>            </figure><p>假设新增一个节点 5，位于节点 2 和节点 4 之间，可以看到此时，这个变更的影响范围就被局限在了很小的一段上。</p><h2 id="redis-虚拟槽"><a href="#redis-虚拟槽" class="headerlink" title="redis 虚拟槽"></a>redis 虚拟槽</h2><p>redis 集群将整个数据库分成了 16384 个槽（slot）。数据库中的每个键都属于 16384 个槽中的一个，集群中的每个节点可以处理 0 个或者 16384 个槽。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="槽.png" alt="img" title>                </div>                <div class="image-caption">img</div>            </figure><p>槽是 redis 集群管理数据的基本单位，集群伸缩就是槽和数据在节点之间的移动。</p><h1 id="redis-集群搭建"><a href="#redis-集群搭建" class="headerlink" title="redis 集群搭建"></a>redis 集群搭建</h1><h2 id="cluster-meet"><a href="#cluster-meet" class="headerlink" title="cluster meet"></a>cluster meet</h2><p>首先需要把配置文件里的 cluster-enabled 设置为 yes 以开启集群模式。</p><p>启动节点后，不同机器上的节点之间初跑起来的时候都是独立的，需要通过</p><blockquote><p>cluster meet ip port</p></blockquote><p>命令来使服务器之间握手连接。</p><h2 id="分配槽"><a href="#分配槽" class="headerlink" title="分配槽"></a>分配槽</h2><blockquote><p>cluster addslots [slot]</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;数据分片&quot;&gt;&lt;a href=&quot;#数据分片&quot; class=&quot;headerlink&quot; title=&quot;数据分片&quot;&gt;&lt;/a&gt;数据分片&lt;/h1&gt;&lt;p&gt;数据分片是分布式存储中最重要的问题之一，即当存储被分散到不同的节点时，如何来将数据映射到不同的节点中？&lt;/p&gt;
+&lt;h2 id
+      
+    
+    </summary>
+    
+    
+      <category term="redis" scheme="https://firecarrrr.github.io/tags/redis/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>MySQL 慢查询</title>
+    <link href="https://firecarrrr.github.io/2020/06/29/MySQL-%E6%85%A2%E6%9F%A5%E8%AF%A2/"/>
+    <id>https://firecarrrr.github.io/2020/06/29/MySQL-慢查询/</id>
+    <published>2020-06-29T13:31:56.000Z</published>
+    <updated>2020-06-29T13:35:56.678Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="获取有性能问题的-SQL"><a href="#获取有性能问题的-SQL" class="headerlink" title="获取有性能问题的 SQL"></a>获取有性能问题的 SQL</h1><h2 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h2><p>与慢查询日志有关的配置：</p><ul><li><strong>slow_query_log</strong>：启动停止记录慢查询日志</li><li><strong>slow_query_log_file</strong>：指定慢查询日志存储路径及文件</li><li><strong>long_query_time</strong>：指定记录慢查日志 SQL 执行时间的阈值（单位：秒）</li><li><strong>log_queries_not_using_indexes</strong>：是否记录未使用索引的 SQL（和上面那个阈值无关，只要没有用到索引就会记录）</li></ul><p><strong>慢查询日志中记录的内容：</strong></p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="slow_log.png" alt="image-20200629204739096" title>                </div>                <div class="image-caption">image-20200629204739096</div>            </figure><ul><li>执行这条语句的用户信息</li><li>语句执行的时间</li><li>锁的时间</li><li>返回的数据的行数</li><li>扫描的数据的行数</li><li>这条 SQL 语句</li></ul><h2 id="常用慢查询分析工具"><a href="#常用慢查询分析工具" class="headerlink" title="常用慢查询分析工具"></a>常用慢查询分析工具</h2><p>如果是一个繁忙的系统，产生慢查询日志的量可能很大，可以利用一些工具对慢查询日志进行分析。</p><h4 id="mysqldumpslow"><a href="#mysqldumpslow" class="headerlink" title="mysqldumpslow"></a>mysqldumpslow</h4><p>mysqldumpslow 会合并相同的语句</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -s r -t 10 slow-mysql.log</span><br></pre></td></tr></table></figure><p>-s 指定按哪种排序方式输出结果：</p><ul><li>c：总的执行次数</li><li>t：总的执行时间</li><li>l：总的锁的时间</li><li>r：总的返回的数据行数</li><li>at，al，ar：上面那些值的平均值，</li></ul><p>-t 指定 top 多少条的数据输出</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="mysqldumpslow.png" alt="image-20200629211451977" title>                </div>                <div class="image-caption">image-20200629211451977</div>            </figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;获取有性能问题的-SQL&quot;&gt;&lt;a href=&quot;#获取有性能问题的-SQL&quot; class=&quot;headerlink&quot; title=&quot;获取有性能问题的 SQL&quot;&gt;&lt;/a&gt;获取有性能问题的 SQL&lt;/h1&gt;&lt;h2 id=&quot;慢查询日志&quot;&gt;&lt;a href=&quot;#慢查询日志&quot; c
+      
+    
+    </summary>
+    
+      <category term="MySQL" scheme="https://firecarrrr.github.io/categories/MySQL/"/>
+    
+    
+      <category term="SQL" scheme="https://firecarrrr.github.io/tags/SQL/"/>
+    
+  </entry>
+  
+  <entry>
     <title>RPC 原理</title>
     <link href="https://firecarrrr.github.io/2020/06/23/RPC-%E5%8E%9F%E7%90%86/"/>
     <id>https://firecarrrr.github.io/2020/06/23/RPC-原理/</id>
     <published>2020-06-23T06:42:08.000Z</published>
-    <updated>2020-06-23T11:52:48.089Z</updated>
+    <updated>2020-06-27T07:32:33.200Z</updated>
     
     <content type="html"><![CDATA[<h1 id="什么是-RPC"><a href="#什么是-RPC" class="headerlink" title="什么是 RPC"></a>什么是 RPC</h1><p>RPC (Remote Procedure Call)，远程过程调用，也就是一台机器上调用另一台机器上的函数。尽管这两个进程并不在同一个内存空间，但这个调用过程就像发生在一个进程内一样。</p><p>市面上常见的 RPC 框架包括 Dubbo、gRPC 之类的。</p><h2 id="一个-RPC-调用的例子"><a href="#一个-RPC-调用的例子" class="headerlink" title="一个 RPC 调用的例子"></a>一个 RPC 调用的例子</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客户端</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Reference</span> <span class="comment">// dubbo注解</span></span><br><span class="line">    <span class="keyword">private</span> HelloService helloService;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> helloService.hello(<span class="string">"World"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 服务端</span></span><br><span class="line"><span class="meta">@Service</span> <span class="comment">// dubbo注解</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloServiceImpl</span> <span class="keyword">implements</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Hello "</span> + name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>上面是一个 Spring 和 Dubbo 配合使用的例子。 </p><p>客户端通过 @ Reference 注解，获取了一个 HelloService 接口的对象。然后就可以直接调用 HelloService 的方法，但实际上这个调用的实现发生在远程主机。</p><p>在服务端，实现了 HelloService 接口，并使用 @Service 注解（dubbo 注解），在 Dubbo 框架中注册了这个实现类。</p><p>可以看出，在业务编码层面上，使用 dubbo 实现远程调用和在本地调用并没有多大区别，这是因为 dubbo 框架在背后完成了远程调用。</p><p>在客户端，业务代码得到的 HelloService 这个接口的实现，并不是服务端提供的真正的实现类 HelloServiceImpl 的一个实例，<strong>而是由 RPC 框架提供的一个代理类的实例，这个代理类被称作 ”桩（stub）“。</strong></p><p>作为一个代理类，桩也实现了 HelloService 接口，客户端在调用 hello 方法时，实际上调用的是这个桩的 hello 方法。在这个 hello 方法中，桩会构造一个请求，包含：</p><ul><li>请求的服务名，例如：HelloService#hello(String)</li><li>请求的所有参数，比如例子中的 name，值是 “World”</li></ul><p>服务端收到请求后，先把请求中的服务名解析出来，然后根据服务名在服务端进程中，找到服务的提供者。找到提供者后，RPC 框架使用客户端传来的参数调用服务提供者。服务端的 RPC 框架获得返回结果之后，再将结果封装成响应，返回给客户端。</p><p>客户端收到服务端的响应后，从中解析出返回值，返回给服务调用方。这样一次 RPC 调用就完成了。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="D:\Blog\blog\source\_posts\RPC-原理\demo.jpg" alt title>                </div>                <div class="image-caption"></div>            </figure><h2 id="RPC-主要技术"><a href="#RPC-主要技术" class="headerlink" title="RPC 主要技术"></a>RPC 主要技术</h2><p>实现一个 RPC 框架，主要需要实现：</p><ol><li>高性能网络传输</li><li>序列化与反序列化</li><li>服务路由与服务发现</li></ol><p>关于服务路由与服务发现：</p><p>​       这个模块要解决的是，客户端如何知道服务端的服务地址呢？在 RPC 框架中存在一个<strong>注册中心</strong>组件，服务端的业务代码在向 RPC 框架注册服务之后，RPC 框架就会把这个服务的名称和地址发布到注册中心上。客户端的桩在调用服务之前，会向注册中心请求服务端的地址。</p><h2 id="RPC-框架的一个-Demo"><a href="#RPC-框架的一个-Demo" class="headerlink" title="RPC 框架的一个 Demo"></a>RPC 框架的一个 Demo</h2><p>这个类里面定义了 RPC 里面最重要的几个方法：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * RPC框架对外提供的服务接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">RpcAccessPoint</span> <span class="keyword">extends</span> <span class="title">Closeable</span></span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端获取远程服务的引用</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> uri 远程服务地址</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> serviceClass 服务的接口类的Class</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> &lt;T&gt; 服务接口的类型</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 远程服务引用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    &lt;T&gt; <span class="function">T <span class="title">getRemoteService</span><span class="params">(URI uri, Class&lt;T&gt; serviceClass)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 服务端注册服务的实现实例</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> service 实现实例</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> serviceClass 服务的接口类的Class</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> &lt;T&gt; 服务接口的类型</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 服务地址</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    &lt;T&gt; <span class="function">URI <span class="title">addServiceProvider</span><span class="params">(T service, Class&lt;T&gt; serviceClass)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取注册中心的引用</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> nameServiceUri 注册中心URI</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 注册中心引用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">default</span> NameService <span class="title">getNameService</span><span class="params">(URI nameServiceUri)</span> </span>&#123;</span><br><span class="line">        Collection&lt;NameService&gt; nameServices = ServiceSupport.loadAll(NameService.class);</span><br><span class="line">        <span class="keyword">for</span> (NameService nameService : nameServices) &#123;</span><br><span class="line">            <span class="keyword">if</span>(nameService.supportedSchemes().contains(nameServiceUri.getScheme())) &#123;</span><br><span class="line">                nameService.connect(nameServiceUri);</span><br><span class="line">                <span class="keyword">return</span> nameService;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 服务端启动RPC框架，监听接口，开始提供远程服务。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 服务实例，用于程序停止的时候安全关闭服务。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Closeable <span class="title">startServer</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
     
@@ -34,7 +108,7 @@
     
     </summary>
     
-      <category term="RPC" scheme="https://firecarrrr.github.io/categories/RPC/"/>
+      <category term="Distributed System" scheme="https://firecarrrr.github.io/categories/Distributed-System/"/>
     
     
   </entry>

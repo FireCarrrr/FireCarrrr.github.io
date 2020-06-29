@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>TCP 连接的建立和拆除 | YUYUYU&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="计算机网络">
+    <meta name="description" content="TCP 连接建立的过程三次握手                                                                                                             客户端向服务端发送报文，将 SYN 标志位置 1，客户端随机产生一个初始序列号   client_isn 。 服务器收到来自客户端的 SYN 报文，会为">
+<meta name="keywords" content="计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP 连接的建立和拆除">
+<meta property="og:url" content="https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/index.html">
+<meta property="og:site_name" content="YUYUYU&#39;s Blog">
+<meta property="og:description" content="TCP 连接建立的过程三次握手                                                                                                             客户端向服务端发送报文，将 SYN 标志位置 1，客户端随机产生一个初始序列号   client_isn 。 服务器收到来自客户端的 SYN 报文，会为">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/三次握手.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/四次挥手.png">
+<meta property="og:updated_time" content="2020-06-29T13:34:47.325Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TCP 连接的建立和拆除">
+<meta name="twitter:description" content="TCP 连接建立的过程三次握手                                                                                                             客户端向服务端发送报文，将 SYN 标志位置 1，客户端随机产生一个初始序列号   client_isn 。 服务器收到来自客户端的 SYN 报文，会为">
+<meta name="twitter:image" content="https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/三次握手.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/images/car.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">YUYUYU</h5>
+          <a href="mailto:gong.2008@outlook.com" title="gong.2008@outlook.com" class="mail">gong.2008@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/">
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Java">
+                <i class="icon icon-lg icon-coffee"></i>
+                Java
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/MySQL">
+                <i class="icon icon-lg icon-database"></i>
+                MySQL
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Distributed_System">
+                <i class="icon icon-lg icon-code"></i>
+                Distributed System
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Basic">
+                <i class="icon icon-lg icon-book"></i>
+                Basic
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/FireCarrrr" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">TCP 连接的建立和拆除</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">TCP 连接的建立和拆除</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-06-29T13:33:21.000Z" itemprop="datePublished" class="page-time">
+  2020-06-29
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Basic/">Basic</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#TCP-连接建立的过程"><span class="post-toc-number">1.</span> <span class="post-toc-text">TCP 连接建立的过程</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#三次握手"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">三次握手</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#为什么需要三次握手？"><span class="post-toc-number">1.1.1.</span> <span class="post-toc-text">为什么需要三次握手？</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#为什么客户端和服务端的初始序列号必须随机生成？"><span class="post-toc-number">1.1.2.</span> <span class="post-toc-text">为什么客户端和服务端的初始序列号必须随机生成？</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#四次挥手"><span class="post-toc-number">1.2.</span> <span class="post-toc-text">四次挥手</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-TCP-连接的建立和拆除" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">TCP 连接的建立和拆除</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-06-29 21:33:21" datetime="2020-06-29T13:33:21.000Z" itemprop="datePublished">2020-06-29</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Basic/">Basic</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style="display:none">
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="TCP-连接建立的过程"><a href="#TCP-连接建立的过程" class="headerlink" title="TCP 连接建立的过程"></a>TCP 连接建立的过程</h1><h2 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="三次握手.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+
+<ol>
+<li>客户端向服务端发送报文，将 SYN 标志位置 1，客户端随机产生一个初始序列号   client_isn 。</li>
+<li>服务器收到来自客户端的 SYN 报文，<strong>会为该 TCP 连接分配缓存和变量</strong>。服务器向客户端发送确认报文，SYN 标志位置 1，随机生成服务器的初始序列号 server_isn ，将首部确认号字段设置为 client_isn + 1。</li>
+<li>收到服务器的 SYNACK 报文后，<strong>客户端为该连接分配缓存和变量</strong>。客户端向主机发送另一个报文，确认号设置为 server_isn + 1，SYN 设置为 0，序号设置为 client_isn + 1。<strong>这个报文可以携带数据。</strong></li>
+</ol>
+<h3 id="为什么需要三次握手？"><a href="#为什么需要三次握手？" class="headerlink" title="为什么需要三次握手？"></a>为什么需要三次握手？</h3><ul>
+<li>第一次报文发送，服务端如果收到了客户端的报文，此时，服务端知道客户端到服务端的连接是可用的。</li>
+<li>第二次报文发送，如果客户端收到了服务端的报文，此时，客户端知道了客户端到服务端和服务端到客户端的连接时可用的。</li>
+<li>第三次报文发送，如果服务端收到了连接，此时，服务端就知道服务端到客户端的连接也是可用的。客户端和服务端就都能够确认这个链路双向都是可用的。</li>
+</ul>
+<h3 id="为什么客户端和服务端的初始序列号必须随机生成？"><a href="#为什么客户端和服务端的初始序列号必须随机生成？" class="headerlink" title="为什么客户端和服务端的初始序列号必须随机生成？"></a>为什么客户端和服务端的初始序列号必须随机生成？</h3><p>假设有三个角色 A 代表服务器，B 代表客户端，C 代表攻击者。如果以 B 的身份伪造一个请求发送给 A，A 会给 B 发送一个 SYNACK 报文，假设此时 B 被 C 搞得处于异常状态。如果这个 SYNACK 报文中的 server_isn 是固定的，那么 C 就很容易猜测出这个 server_isn，然后构造确认号发送报文给 A。</p>
+<h2 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="四次挥手.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+
+<p>参与一条 TCP 连接的两个进程中任何一个都能终止该连接。当某客户打算关闭连接：</p>
+<ol>
+<li>客户应用进程给服务器发送一个报文，将 FIN 标志位置 1。</li>
+<li>服务器会送一个确认报文，ACK 标志位置 1。</li>
+<li>服务器发送它的终止报文，FIN 标志位置 1。</li>
+<li>客户端对服务器的终止报文进行确认，ACK 置 1。</li>
+</ol>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last updated: <time datetime="2020-06-29T13:34:47.325Z" itemprop="dateUpdated">2020-06-29 21:34:47</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2020/06/29/TCP-连接的建立和拆除/" target="_blank" rel="external">https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="https://firecarrrr.github.io">
+            <img src="/images/car.jpg" alt="YUYUYU">
+            YUYUYU
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/计算机网络/">计算机网络</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/&title=《TCP 连接的建立和拆除》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/&title=《TCP 连接的建立和拆除》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《TCP 连接的建立和拆除》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/06/29/redis-集群/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">数据分片与 redis 集群</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style="display:none">
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style="display:none">
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>YUYUYU &copy; 2015 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/&title=《TCP 连接的建立和拆除》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/&title=《TCP 连接的建立和拆除》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《TCP 连接的建立和拆除》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2020/06/29/TCP-连接的建立和拆除/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
