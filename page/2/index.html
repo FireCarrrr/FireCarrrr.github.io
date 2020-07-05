@@ -142,7 +142,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -174,6 +174,52 @@
 <div class="container body-wrap">
 
     <ul class="post-list">
+    
+        <li class="post-list-item fade">
+            <article id="post-MySQL日志" class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-06-19 20:48:35" datetime="2020-06-19T12:48:35.000Z" itemprop="datePublished">2020-06-19</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/06/19/MySQL日志/">MySQL日志</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        MySQL 日志总结一下 MySQL （innoDB 存储引擎）的三种日志。
+
+redo log：InnoDB 特有的物理日志
+bin log：Server 层的逻辑日志
+undo log：存放数据被修改前的值
+
+Buffer PoolBuffer Pool 是 InnoDB 在内存中缓存被访问表和索引的地方。Buffer Pool 可以使得经常被访问的数据直接在内存中被处理，从而加快处理速...
+    
+
+        <a href="/2020/06/19/MySQL日志/" class="post-more waves-effect waves-button">
+            Continue reading...
+        </a>
+    </div>
+    
+</article>
+
+        </li>
     
         <li class="post-list-item fade">
             <article id="post-Transaction" class="article-card article-type-post" itemprop="blogPost">
@@ -210,7 +256,7 @@ Spring 事务的传播行为有哪些？通过实验的方式来验证一下 Spr
     
 
         <a href="/2020/06/18/Transaction/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -253,7 +299,7 @@ Spring 事务的传播行为有哪些？通过实验的方式来验证一下 Spr
     
 
         <a href="/2020/05/07/Dynamic-Proxy/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -296,7 +342,7 @@ ApplicationContext: ApplicationContext 在 BeanFactory 的基础上构建，是�
     
 
         <a href="/2020/05/04/SpringBean/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -344,7 +390,7 @@ ApplicationContext: ApplicationContext 在 BeanFactory 的基础上构建，是�
     
 
         <a href="/2020/04/22/TLS/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -397,7 +443,7 @@ IO所谓I/O就是内存和外部设备之间拷贝数据的过程。以网络 I/
     
 
         <a href="/2020/04/15/Reactor/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -439,7 +485,7 @@ MySQL事务其实事务这东西说白了就是一组操作的集合。我们希
     
 
         <a href="/2019/08/04/mysql-transaction/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -481,7 +527,7 @@ MySQL事务其实事务这东西说白了就是一组操作的集合。我们希
     
 
         <a href="/2019/07/20/mysql-index/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -522,7 +568,7 @@ Qu...
     
 
         <a href="/2019/06/15/终于搭好了/" class="post-more waves-effect waves-button">
-            続きを読む…
+            Continue reading...
         </a>
     </div>
     
@@ -559,7 +605,7 @@ Qu...
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>このブログの内容物は<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
