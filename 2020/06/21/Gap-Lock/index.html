@@ -20,9 +20,8 @@
     <meta name="theme-color" content="#3F51B5">
     
     
-    <meta name="keywords" content="MySQL">
+    <meta name="keywords" content>
     <meta name="description" content="幻读幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。 幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。 快照读与当前读快照读在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVCC 实">
-<meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Gap Lock">
 <meta property="og:url" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/index.html">
@@ -32,8 +31,8 @@
 <meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/example.png">
 <meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/example3.png">
 <meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/gap.png">
-<meta property="og:image" content="d:/Blog/blog/source/_posts/Gap-Lock/gaplockpro.png">
-<meta property="og:updated_time" content="2020-06-21T09:32:06.513Z">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/06/21/Gap-Lock/gaplockpro.png">
+<meta property="og:updated_time" content="2020-07-06T12:58:49.212Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gap Lock">
 <meta name="twitter:description" content="幻读幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。 幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。 快照读与当前读快照读在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVCC 实">
@@ -152,7 +151,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -175,6 +174,8 @@
   2020-06-21
 </time>
 
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
 
             
         </h5>
@@ -204,6 +205,8 @@
             <time class="post-time" title="2020-06-21 14:39:06" datetime="2020-06-21T06:39:06.000Z" itemprop="datePublished">2020-06-21</time>
 
             
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
+
 
 
             
@@ -291,7 +294,7 @@
 <h2 id="间隙锁可能导致的问题"><a href="#间隙锁可能导致的问题" class="headerlink" title="间隙锁可能导致的问题"></a>间隙锁可能导致的问题</h2><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="D:\Blog\blog\source\_posts\Gap-Lock\gaplockpro.png" alt="img" title>
+                    <img src="gaplockpro.png" alt="img" title>
                 </div>
                 <div class="image-caption">img</div>
             </figure>
@@ -312,7 +315,7 @@
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2020-06-21T09:32:06.513Z" itemprop="dateUpdated">2020-06-21 17:32:06</time>
+    Last updated: <time datetime="2020-07-06T12:58:49.212Z" itemprop="dateUpdated">2020-07-06 20:58:49</time>
 </span><br>
 
 
@@ -334,8 +337,6 @@
 
         <div class="post-footer">
             
-	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
-
 
             
 <div class="page-share-wrap">
@@ -455,7 +456,7 @@
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
