@@ -142,7 +142,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -174,6 +174,93 @@
 <div class="container body-wrap">
 
     <ul class="post-list">
+    
+        <li class="post-list-item fade">
+            <article id="post-java-String" class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-06-22 15:20:05" datetime="2020-06-22T07:20:05.000Z" itemprop="datePublished">2020-06-22</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Java/">Java</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/06/22/java-String/">java String</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        String 对象是如何实现的JDK 7 &amp; 8 的实现在这两个版本的 JDK 中，String 本质上是一个不可变 char[]
+JDK 9 的实现JDK 9 中，char[] 被改变成了 byte[]。并且新增了一个属性 coder，来表示编码格式。这是因为一个 char 字符占两个字节，在可变长编码格式中，对于只占一个字节的字符来说，相当于浪费了一个字节的空间。用 byte[]...
+    
+
+        <a href="/2020/06/22/java-String/" class="post-more waves-effect waves-button">
+            阅读全文…
+        </a>
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-Gap-Lock" class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-06-21 14:39:06" datetime="2020-06-21T06:39:06.000Z" itemprop="datePublished">2020-06-21</time>
+
+        
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/06/21/Gap-Lock/">Gap Lock</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        幻读幻读是指一个事务在进行过程中前后两次对同一范围数据的查询结果不一致，后一次出现了前一次查询没有查到的新行。这个新行指的是被新插入的新行。
+幻读只会出现在 rr 隔离级别下的当前读场景，因为在 rc 隔离级别下，语义上规定的就是一个事务提交了就能被其它事务看到，就无所谓什么幻读了。
+快照读与当前读快照读在 MySQL 的默认隔离级别 RR 下，一般的 select 语句完成的是基于 MVC...
+    
+
+        <a href="/2020/06/21/Gap-Lock/" class="post-more waves-effect waves-button">
+            阅读全文…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
     
         <li class="post-list-item fade">
             <article id="post-MySQL日志" class="article-card article-type-post" itemprop="blogPost">
@@ -213,7 +300,7 @@ Buffer PoolBuffer Pool 是 InnoDB 在内存中缓存被访问表和索引的地�
     
 
         <a href="/2020/06/19/MySQL日志/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -256,7 +343,7 @@ Spring 事务的传播行为有哪些？通过实验的方式来验证一下 Spr
     
 
         <a href="/2020/06/18/Transaction/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -299,7 +386,7 @@ Spring 事务的传播行为有哪些？通过实验的方式来验证一下 Spr
     
 
         <a href="/2020/05/07/Dynamic-Proxy/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -342,7 +429,7 @@ ApplicationContext: ApplicationContext 在 BeanFactory 的基础上构建，是�
     
 
         <a href="/2020/05/04/SpringBean/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -390,7 +477,7 @@ ApplicationContext: ApplicationContext 在 BeanFactory 的基础上构建，是�
     
 
         <a href="/2020/04/22/TLS/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -443,7 +530,7 @@ IO所谓I/O就是内存和外部设备之间拷贝数据的过程。以网络 I/
     
 
         <a href="/2020/04/15/Reactor/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -485,7 +572,7 @@ MySQL事务其实事务这东西说白了就是一组操作的集合。我们希
     
 
         <a href="/2019/08/04/mysql-transaction/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -527,48 +614,7 @@ MySQL事务其实事务这东西说白了就是一组操作的集合。我们希
     
 
         <a href="/2019/07/20/mysql-index/" class="post-more waves-effect waves-button">
-            Continue reading...
-        </a>
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-终于搭好了" class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-06-15 16:48:18" datetime="2019-06-15T08:48:18.332Z" itemprop="datePublished">2019-06-15</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Java/">Java</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/06/15/终于搭好了/">终于搭好了</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Qu...
-    
-
-        <a href="/2019/06/15/终于搭好了/" class="post-more waves-effect waves-button">
-            Continue reading...
+            阅读全文…
         </a>
     </div>
     
@@ -581,7 +627,7 @@ Qu...
     
 <nav id="page-nav">
     <div class="inner">
-    <a class="extend prev" rel="prev" href="/">上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/">上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">下一页</a>
     </div>
 </nav>
 
@@ -605,7 +651,7 @@ Qu...
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
         </p>
     </div>
     <div class="bottom">

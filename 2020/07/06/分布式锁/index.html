@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>分布式锁 | YUYUYU&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content>
+    <meta name="description" content="什么是分布式锁？在分布式环境下，对共享资源的访问或者一些同步操作时需要分布式锁来协助的。 比如说假设一个场景，一个订单服务，允许一个用户一个商品只能下一单。订单服务有多个实例，两个并发的请求被负载均衡分配到了不同的实例上，这个两个实例同时创建订单，那么就会出现一个商品下了多单的情况。 这种情况，就需要在下单时加上分布式锁，防止其它实例同时下单。 分布式锁服务应该具备的特点 安全性：在任意时刻，只有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式锁">
+<meta property="og:url" content="https://firecarrrr.github.io/2020/07/06/分布式锁/index.html">
+<meta property="og:site_name" content="YUYUYU&#39;s Blog">
+<meta property="og:description" content="什么是分布式锁？在分布式环境下，对共享资源的访问或者一些同步操作时需要分布式锁来协助的。 比如说假设一个场景，一个订单服务，允许一个用户一个商品只能下一单。订单服务有多个实例，两个并发的请求被负载均衡分配到了不同的实例上，这个两个实例同时创建订单，那么就会出现一个商品下了多单的情况。 这种情况，就需要在下单时加上分布式锁，防止其它实例同时下单。 分布式锁服务应该具备的特点 安全性：在任意时刻，只有">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/07/06/分布式锁/redis分布式锁.png">
+<meta property="og:image" content="https://firecarrrr.github.io/2020/07/06/分布式锁/zookeeper分布式锁.png">
+<meta property="og:updated_time" content="2020-07-06T09:27:44.482Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分布式锁">
+<meta name="twitter:description" content="什么是分布式锁？在分布式环境下，对共享资源的访问或者一些同步操作时需要分布式锁来协助的。 比如说假设一个场景，一个订单服务，允许一个用户一个商品只能下一单。订单服务有多个实例，两个并发的请求被负载均衡分配到了不同的实例上，这个两个实例同时创建订单，那么就会出现一个商品下了多单的情况。 这种情况，就需要在下单时加上分布式锁，防止其它实例同时下单。 分布式锁服务应该具备的特点 安全性：在任意时刻，只有">
+<meta name="twitter:image" content="https://firecarrrr.github.io/2020/07/06/分布式锁/redis分布式锁.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/images/car.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">YUYUYU</h5>
+          <a href="mailto:gong.2008@outlook.com" title="gong.2008@outlook.com" class="mail">gong.2008@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/">
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Java">
+                <i class="icon icon-lg icon-coffee"></i>
+                Java
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/MySQL">
+                <i class="icon icon-lg icon-database"></i>
+                MySQL
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Distributed_System">
+                <i class="icon icon-lg icon-code"></i>
+                Distributed System
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Basic">
+                <i class="icon icon-lg icon-book"></i>
+                Basic
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/FireCarrrr" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">分布式锁</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">分布式锁</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-07-06T09:26:03.000Z" itemprop="datePublished" class="page-time">
+  2020-07-06
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Distributed-System/">Distributed System</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#什么是分布式锁？"><span class="post-toc-number">1.</span> <span class="post-toc-text">什么是分布式锁？</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#分布式锁服务应该具备的特点"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">分布式锁服务应该具备的特点</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#分布式锁服务的实现"><span class="post-toc-number">2.</span> <span class="post-toc-text">分布式锁服务的实现</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Redis-分布式锁服务"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">Redis 分布式锁服务</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#单机方案"><span class="post-toc-number">2.1.1.</span> <span class="post-toc-text">单机方案</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#RedLock-算法"><span class="post-toc-number">2.1.2.</span> <span class="post-toc-text">RedLock 算法</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#失败重试"><span class="post-toc-number">2.1.2.1.</span> <span class="post-toc-text">失败重试</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#DB-实现分布式锁"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">DB 实现分布式锁</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#基于唯一索引的实现"><span class="post-toc-number">2.2.1.</span> <span class="post-toc-text">基于唯一索引的实现</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Zookeeper-实现分布式锁"><span class="post-toc-number">2.3.</span> <span class="post-toc-text">Zookeeper 实现分布式锁</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-分布式锁" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">分布式锁</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-07-06 17:26:03" datetime="2020-07-06T09:26:03.000Z" itemprop="datePublished">2020-07-06</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Distributed-System/">Distributed System</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style="display:none">
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="什么是分布式锁？"><a href="#什么是分布式锁？" class="headerlink" title="什么是分布式锁？"></a>什么是分布式锁？</h1><p>在分布式环境下，对共享资源的访问或者一些同步操作时需要分布式锁来协助的。</p>
+<p>比如说假设一个场景，一个订单服务，允许一个用户一个商品只能下一单。订单服务有多个实例，两个并发的请求被负载均衡分配到了不同的实例上，这个两个实例同时创建订单，那么就会出现一个商品下了多单的情况。</p>
+<p>这种情况，就需要在下单时加上分布式锁，防止其它实例同时下单。</p>
+<h2 id="分布式锁服务应该具备的特点"><a href="#分布式锁服务应该具备的特点" class="headerlink" title="分布式锁服务应该具备的特点"></a>分布式锁服务应该具备的特点</h2><ul>
+<li><strong>安全性</strong>：在任意时刻，只有一个客户端可以获得锁</li>
+<li><strong>避免死锁</strong>：客户端最终一定可以获得锁，即使当前持有锁的客户端在释放锁之前崩溃或者网络不可达</li>
+<li><strong>容错性</strong>：只要锁服务集群中的大部分节点存活，Client 就可以执行加锁操作</li>
+</ul>
+<h1 id="分布式锁服务的实现"><a href="#分布式锁服务的实现" class="headerlink" title="分布式锁服务的实现"></a>分布式锁服务的实现</h1><p>分布式锁服务，一般可以用 DB，Redis，ZooKeeper 等实现</p>
+<h2 id="Redis-分布式锁服务"><a href="#Redis-分布式锁服务" class="headerlink" title="Redis 分布式锁服务"></a>Redis 分布式锁服务</h2><h3 id="单机方案"><a href="#单机方案" class="headerlink" title="单机方案"></a>单机方案</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET resource_name my_random_value NX PX 30000</span><br></pre></td></tr></table></figure>
+
+<p>这条命令在不存在这个 key 的情况下（NX 选项），会设置一个随机的 value 赋给这个 key，并设置一个超时时间 30000 ms</p>
+<p>然后通过下面的算法来释放这个锁：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">"get"</span>,KEYS[<span class="number">1</span>]) == ARGV[<span class="number">1</span>] <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">return</span> redis.call(<span class="string">"del"</span>,KEYS[<span class="number">1</span>])</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>只有当 key 对应的 value 和客户端设置的随机值相等时，才去删除这个 key。这样可以防止一个客户端释放了另一个客户端申请的锁。（比如，Client A 获取了锁，然后阻塞在某个耗时操作上了，锁自动释放了。然后，B 获取了锁。A 此时醒过来要去释放锁，如果没有上述保证，是会出问题的）。</p>
+<p>另外，这个方案还有其它问题：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="redis分布式锁.png" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<ul>
+<li>假设 A 获取了锁</li>
+<li>A 挂在了某些耗时操作上，比如一个外部的阻塞调用，或是 CPU 被别的进程吃满，或者碰上了 full gc，导致 A 花了超过平时几倍的时间</li>
+<li>A 获取的锁超时，自动释放</li>
+<li>B 获取锁并更新了资源</li>
+<li>A 醒过来，也去更新了资源。于是，就是 B 的更新给冲掉了</li>
+</ul>
+<h3 id="RedLock-算法"><a href="#RedLock-算法" class="headerlink" title="RedLock 算法"></a>RedLock 算法</h3><p>假设有 N 个 redis 节点，这 N 个节点是独立的，没有任何主备关系和额外的协调系统。</p>
+<p>当申请一个 key 时，客户端做以下操作：</p>
+<ul>
+<li>获取当前时间戳</li>
+<li><strong>用同样的 key 和随机值</strong>，顺序的尝试从这 N 个节点上获取锁。获取锁应该设置一个超时时间，这个超时时间应该比锁自动释放的时间短很多，以防止某些节点挂掉的情况。</li>
+<li>计算获取锁花费的时间（当前时间减去第一步的时间戳），<strong>只有当获取锁话费的时间比锁的有效时间短，并且在大多数节点都获取到锁的情况才能判断客户端获取到了锁。</strong></li>
+<li>锁的有效时间变成了超时时间减去获取锁花费的时间</li>
+<li><strong>如果客户端获取锁失败了，它会尝试在所以节点上解锁</strong></li>
+</ul>
+<h4 id="失败重试"><a href="#失败重试" class="headerlink" title="失败重试"></a>失败重试</h4><p>当客户端尝试获取锁失败的时候，应该隔一个小的 random delay 过后去重试。因为这个是 random delay，所以在一定程度上可以避免多个客户端同时尝试去获取锁的时候造成的 split brain 问题。（多个客户端同时去获取锁，假设一共 5 个节点，一个获取到 2 个，一个获取到 2 个，一个获取到 1 个，最后谁都没有获取到锁）。</p>
+<p>客户端越快的获取多数节点上的锁，split brain  发生的时间窗口就越小，所以理想情况下客户端应该利用多线程技术，同时将 SET 请求发送到 N 个实例上。</p>
+<p>获取锁失败的客户端立即释放所有节点上的锁是非常重要的，不然其它线程就必须等到这个 key 超时之后才能获取这个节点上的锁了。</p>
+<p>当某个客户端出现网络分区的时候，那就只能等那个客户端设置的锁自动超时了。</p>
+<h2 id="DB-实现分布式锁"><a href="#DB-实现分布式锁" class="headerlink" title="DB 实现分布式锁"></a>DB 实现分布式锁</h2><h3 id="基于唯一索引的实现"><a href="#基于唯一索引的实现" class="headerlink" title="基于唯一索引的实现"></a>基于唯一索引的实现</h3><p>数据库里面加一张表，设置关于资源的唯一索引。</p>
+<p>获取锁，就是插入一条数据，如果已经有相应资源的记录，那就会抛出异常。</p>
+<p>锁释放就是删除对应资源。</p>
+<p>问题：</p>
+<ul>
+<li>加锁线程挂了，没办法解锁</li>
+<li>非可重入锁，同一个线程没有解锁，没办法重入</li>
+</ul>
+<h2 id="Zookeeper-实现分布式锁"><a href="#Zookeeper-实现分布式锁" class="headerlink" title="Zookeeper 实现分布式锁"></a>Zookeeper 实现分布式锁</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="zookeeper分布式锁.png" alt="image-20200630224052012" title>
+                </div>
+                <div class="image-caption">image-20200630224052012</div>
+            </figure>
+
+<ul>
+<li>创建的节点必须是临时节点</li>
+<li>对每个资源，节点的名字必须是唯一的</li>
+</ul>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-07-06T09:27:44.482Z" itemprop="dateUpdated">2020-07-06 17:27:44</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2020/07/06/分布式锁/" target="_blank" rel="external">https://firecarrrr.github.io/2020/07/06/分布式锁/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="https://firecarrrr.github.io">
+            <img src="/images/car.jpg" alt="YUYUYU">
+            YUYUYU
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/07/06/分布式锁/&title=《分布式锁》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/07/06/分布式锁/&title=《分布式锁》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/07/06/分布式锁/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《分布式锁》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/07/06/分布式锁/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/07/06/分布式锁/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2020/07/06/Spring-中的设计模式/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Spring 中的设计模式</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/07/05/redis-sentinel/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">redis sentinel</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style="display:none">
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style="display:none">
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>YUYUYU &copy; 2015 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/07/06/分布式锁/&title=《分布式锁》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/07/06/分布式锁/&title=《分布式锁》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/07/06/分布式锁/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《分布式锁》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/07/06/分布式锁/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/07/06/分布式锁/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2020/07/06/分布式锁/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
