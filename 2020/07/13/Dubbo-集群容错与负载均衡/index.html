@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Dubbo 集群容错与负载均衡 | YUYUYU&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="Dubbo">
+    <meta name="description" content="Dubbo 容错策略在设计系统时，不光要考虑正常情况下，代码逻辑怎么走，还要考虑异常情况下，代码逻辑怎么走。当服务消费方调用服务提供方的服务出现错误时，Dubbo 提供了多种容错方案。                                                                                              容错方案.png">
+<meta name="keywords" content="Dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo 集群容错与负载均衡">
+<meta property="og:url" content="https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/index.html">
+<meta property="og:site_name" content="YUYUYU&#39;s Blog">
+<meta property="og:description" content="Dubbo 容错策略在设计系统时，不光要考虑正常情况下，代码逻辑怎么走，还要考虑异常情况下，代码逻辑怎么走。当服务消费方调用服务提供方的服务出现错误时，Dubbo 提供了多种容错方案。                                                                                              容错方案.png">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="d:/Blog/blog/source/_drafts/Dubbo-集群容错与负载均衡/Dubbo">
+<meta property="og:image" content="d:/Blog/blog/source/_drafts/Dubbo-集群容错与负载均衡/cluster.jpg">
+<meta property="og:image" content="d:/Blog/blog/source/_drafts/Dubbo-集群容错与负载均衡/Dubbo">
+<meta property="og:image" content="d:/Blog/blog/source/_drafts/Dubbo-集群容错与负载均衡/consistent-hash-invoker.jpg">
+<meta property="og:updated_time" content="2020-07-13T08:54:41.455Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dubbo 集群容错与负载均衡">
+<meta name="twitter:description" content="Dubbo 容错策略在设计系统时，不光要考虑正常情况下，代码逻辑怎么走，还要考虑异常情况下，代码逻辑怎么走。当服务消费方调用服务提供方的服务出现错误时，Dubbo 提供了多种容错方案。                                                                                              容错方案.png">
+<meta name="twitter:image" content="d:/Blog/blog/source/_drafts/Dubbo-集群容错与负载均衡/Dubbo">
+    
+        <link rel="alternate" type="application/atom+xml" title="YUYUYU&#39;s Blog" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/images/car.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">YUYUYU</h5>
+          <a href="mailto:gong.2008@outlook.com" title="gong.2008@outlook.com" class="mail">gong.2008@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/">
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Java">
+                <i class="icon icon-lg icon-coffee"></i>
+                Java
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/MySQL">
+                <i class="icon icon-lg icon-database"></i>
+                MySQL
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Distributed_System">
+                <i class="icon icon-lg icon-code"></i>
+                Distributed System
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories/Basic">
+                <i class="icon icon-lg icon-book"></i>
+                Basic
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/FireCarrrr" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Dubbo 集群容错与负载均衡</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Dubbo 集群容错与负载均衡</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-07-13T08:54:41.000Z" itemprop="datePublished" class="page-time">
+  2020-07-13
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#Dubbo-容错策略"><span class="post-toc-number">1.</span> <span class="post-toc-text">Dubbo 容错策略</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#实现"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">实现</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#Dubbo-负载均衡策略"><span class="post-toc-number">2.</span> <span class="post-toc-text">Dubbo 负载均衡策略</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#RoundRobin-负载均衡的实现"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">RoundRobin 负载均衡的实现</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#ConsistentHash-负载均衡的实现"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">ConsistentHash 负载均衡的实现</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Dubbo-集群容错与负载均衡" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Dubbo 集群容错与负载均衡</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-07-13 16:54:41" datetime="2020-07-13T08:54:41.000Z" itemprop="datePublished">2020-07-13</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style="display:none">
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="Dubbo-容错策略"><a href="#Dubbo-容错策略" class="headerlink" title="Dubbo 容错策略"></a>Dubbo 容错策略</h1><p>在设计系统时，不光要考虑正常情况下，代码逻辑怎么走，还要考虑异常情况下，代码逻辑怎么走。当服务消费方调用服务提供方的服务出现错误时，Dubbo 提供了多种容错方案。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\Dubbo" alt="Dubbo 容错方案" title="容错方案.png">
+                </div>
+                <div class="image-caption">容错方案.png</div>
+            </figure>
+
+<ul>
+<li><strong>Failover</strong> 是 Dubbo 的默认容错模式，可以配置重试次数，通常用于读操作或者幂等的写操作。<strong>重试会导致接口延时增大，当下游服务器负载达到极限时，重试会加重下游服务器的负担。</strong></li>
+<li><strong>Failfast</strong> 通常用在非幂等的接口调用上</li>
+<li><strong>Failsafe</strong> 通常用在佛系调用场景，即不关心调用是否成功，并且不想抛异常影响外层调用。</li>
+<li><strong>Failback</strong> 请求失败后，会自动记录在失败队列中，并由一个定时线程池定时重试，适用于一些异步或者最终一致性请求。</li>
+<li><strong>Forking</strong> 适用于对实时性要求较高的调用，但会浪费更多的服务资源。可以通过 forks 设置最大并行数。</li>
+<li><strong>Broadcast</strong> 不需要做负载均衡，通常用于服务状态更新后的广播。</li>
+</ul>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\cluster.jpg" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+
+
+<h1 id="Dubbo-负载均衡策略"><a href="#Dubbo-负载均衡策略" class="headerlink" title="Dubbo 负载均衡策略"></a>Dubbo 负载均衡策略</h1><p>当服务提供方是集群时，为了避免大量请求一直集中在一个或者几个服务提供方机器上，从而导致这些机器的负载很高，甚至导致服务不可用，需要做一定的负载均衡策略</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\Dubbo" alt="Dubbo 负载均衡" title="负载均衡.png">
+                </div>
+                <div class="image-caption">负载均衡.png</div>
+            </figure>
+
+<ul>
+<li><strong>Random</strong> 默认负载均衡策略</li>
+<li><strong>RoundRobin</strong> 轮询策略。会存在执行很慢的服务提供者堆积请求的问题，当很多新请求到达该机器后，由于之前的请求还没有处理完，会导致新的请求被堆积。新版本中使用了类似 Ngnix 的平滑轮询算法，改善了请求堆积的问题。</li>
+<li><strong>LeastActive</strong> 最少活跃调用。在每个服务提供者里维护着一个活跃计数器，用来记录当前同时处理请求的个数，也就是并发处理任务的个数。这个值越小，说明当前服务提供者处理速度越快或者当前机器的负载越低。所以路由选择时，就选择这个活跃度最低的机器。如果活跃度相同，则随机选择一个。</li>
+<li><strong>ConsistentHash</strong> 一致性 Hash，可以保证相同参数的请求总是发往同一个提供者。当某一台提供者宕机时，原本发往改提供者的请求，将基于虚拟节点平摊给其它提供者，这样不会引起剧烈变动。</li>
+</ul>
+<h2 id="RoundRobin-负载均衡的实现"><a href="#RoundRobin-负载均衡的实现" class="headerlink" title="RoundRobin 负载均衡的实现"></a>RoundRobin 负载均衡的实现</h2><p>RoundRobin 实现了平滑的轮询算法，这个算法的逻辑是：</p>
+<ol>
+<li>每次做负载均衡时，遍历所有可选节点（Invoker 列表）。对于每个 Invoker，让他的 current = current + weight。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 考虑到并发场景下，某个 invoker 会被同时选中，current 表示节点被线程选中的权重总和</span></span><br><span class="line"><span class="comment">// 例：某个节点权重是 100，被 4 个线程同时选中，则变成 400</span></span><br><span class="line"><span class="keyword">private</span> AtomicLong current = <span class="keyword">new</span> AtomicLong(<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>同时累加所有 Invoker 的 weight 到 totalWeight。</li>
+<li>遍历完所有 Invoker 后，current 值最大的节点就是本次要选择的节点。把该节点的 current 值减去 totalWeight ，current = current - totalWeight。</li>
+<li>回到 1 重复。</li>
+</ol>
+<h2 id="ConsistentHash-负载均衡的实现"><a href="#ConsistentHash-负载均衡的实现" class="headerlink" title="ConsistentHash 负载均衡的实现"></a>ConsistentHash 负载均衡的实现</h2><p>普通一致性 Hash 当节点较少时，可能由于散列不是很均匀，容易造成某些节点压力大（一致性 Hash 倾斜问题）。Dubbo 框架使用了优化过的 Ketama 一致性 Hash。这种算法会给每个真实节点创建多个虚拟节点，让节点环形上的分布更加均匀，后续调用也会随之更加均匀。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\consistent-hash-invoker.jpg" alt="img" title>
+                </div>
+                <div class="image-caption">img</div>
+            </figure>
+
+<p>上图中，相同颜色的节点，属于同一服务提供者。这样做的目的是通过引入虚拟节点，让 Invoker 在圆环上分散开来，避免数据倾斜的问题。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2020-07-13T08:54:41.455Z" itemprop="dateUpdated">2020-07-13 16:54:41</time>
+</span><br>
+
+
+        
+        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2020/07/13/Dubbo-集群容错与负载均衡/" target="_blank" rel="external">https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/</a>
+        
+    </div>
+    
+    <footer>
+        <a href="https://firecarrrr.github.io">
+            <img src="/images/car.jpg" alt="YUYUYU">
+            YUYUYU
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Dubbo/">Dubbo</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/&title=《Dubbo 集群容错与负载均衡》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/&title=《Dubbo 集群容错与负载均衡》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Dubbo 集群容错与负载均衡》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/07/06/Spring-中的设计模式/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Spring 中的设计模式</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style="display:none">
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style="display:none">
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>YUYUYU &copy; 2015 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/&title=《Dubbo 集群容错与负载均衡》 — YUYUYU's Blog&pic=https://firecarrrr.github.io/images/car.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/&title=《Dubbo 集群容错与负载均衡》 — YUYUYU's Blog&source=" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Dubbo 集群容错与负载均衡》 — YUYUYU's Blog&url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/&via=https://firecarrrr.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

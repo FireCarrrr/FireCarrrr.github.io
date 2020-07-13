@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://firecarrrr.github.io/"/>
-  <updated>2020-07-06T09:26:44.558Z</updated>
+  <updated>2020-07-13T08:54:41.455Z</updated>
   <id>https://firecarrrr.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Dubbo 集群容错与负载均衡</title>
+    <link href="https://firecarrrr.github.io/2020/07/13/Dubbo-%E9%9B%86%E7%BE%A4%E5%AE%B9%E9%94%99%E4%B8%8E%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/"/>
+    <id>https://firecarrrr.github.io/2020/07/13/Dubbo-集群容错与负载均衡/</id>
+    <published>2020-07-13T08:54:41.000Z</published>
+    <updated>2020-07-13T08:54:41.455Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Dubbo-容错策略"><a href="#Dubbo-容错策略" class="headerlink" title="Dubbo 容错策略"></a>Dubbo 容错策略</h1><p>在设计系统时，不光要考虑正常情况下，代码逻辑怎么走，还要考虑异常情况下，代码逻辑怎么走。当服务消费方调用服务提供方的服务出现错误时，Dubbo 提供了多种容错方案。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\Dubbo" alt="Dubbo 容错方案" title="容错方案.png">                </div>                <div class="image-caption">容错方案.png</div>            </figure><ul><li><strong>Failover</strong> 是 Dubbo 的默认容错模式，可以配置重试次数，通常用于读操作或者幂等的写操作。<strong>重试会导致接口延时增大，当下游服务器负载达到极限时，重试会加重下游服务器的负担。</strong></li><li><strong>Failfast</strong> 通常用在非幂等的接口调用上</li><li><strong>Failsafe</strong> 通常用在佛系调用场景，即不关心调用是否成功，并且不想抛异常影响外层调用。</li><li><strong>Failback</strong> 请求失败后，会自动记录在失败队列中，并由一个定时线程池定时重试，适用于一些异步或者最终一致性请求。</li><li><strong>Forking</strong> 适用于对实时性要求较高的调用，但会浪费更多的服务资源。可以通过 forks 设置最大并行数。</li><li><strong>Broadcast</strong> 不需要做负载均衡，通常用于服务状态更新后的广播。</li></ul><h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\cluster.jpg" alt="img" title>                </div>                <div class="image-caption">img</div>            </figure><h1 id="Dubbo-负载均衡策略"><a href="#Dubbo-负载均衡策略" class="headerlink" title="Dubbo 负载均衡策略"></a>Dubbo 负载均衡策略</h1><p>当服务提供方是集群时，为了避免大量请求一直集中在一个或者几个服务提供方机器上，从而导致这些机器的负载很高，甚至导致服务不可用，需要做一定的负载均衡策略</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\Dubbo" alt="Dubbo 负载均衡" title="负载均衡.png">                </div>                <div class="image-caption">负载均衡.png</div>            </figure><ul><li><strong>Random</strong> 默认负载均衡策略</li><li><strong>RoundRobin</strong> 轮询策略。会存在执行很慢的服务提供者堆积请求的问题，当很多新请求到达该机器后，由于之前的请求还没有处理完，会导致新的请求被堆积。新版本中使用了类似 Ngnix 的平滑轮询算法，改善了请求堆积的问题。</li><li><strong>LeastActive</strong> 最少活跃调用。在每个服务提供者里维护着一个活跃计数器，用来记录当前同时处理请求的个数，也就是并发处理任务的个数。这个值越小，说明当前服务提供者处理速度越快或者当前机器的负载越低。所以路由选择时，就选择这个活跃度最低的机器。如果活跃度相同，则随机选择一个。</li><li><strong>ConsistentHash</strong> 一致性 Hash，可以保证相同参数的请求总是发往同一个提供者。当某一台提供者宕机时，原本发往改提供者的请求，将基于虚拟节点平摊给其它提供者，这样不会引起剧烈变动。</li></ul><h2 id="RoundRobin-负载均衡的实现"><a href="#RoundRobin-负载均衡的实现" class="headerlink" title="RoundRobin 负载均衡的实现"></a>RoundRobin 负载均衡的实现</h2><p>RoundRobin 实现了平滑的轮询算法，这个算法的逻辑是：</p><ol><li>每次做负载均衡时，遍历所有可选节点（Invoker 列表）。对于每个 Invoker，让他的 current = current + weight。</li></ol><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 考虑到并发场景下，某个 invoker 会被同时选中，current 表示节点被线程选中的权重总和</span></span><br><span class="line"><span class="comment">// 例：某个节点权重是 100，被 4 个线程同时选中，则变成 400</span></span><br><span class="line"><span class="keyword">private</span> AtomicLong current = <span class="keyword">new</span> AtomicLong(<span class="number">0</span>);</span><br></pre></td></tr></table></figure><ol start="2"><li>同时累加所有 Invoker 的 weight 到 totalWeight。</li><li>遍历完所有 Invoker 后，current 值最大的节点就是本次要选择的节点。把该节点的 current 值减去 totalWeight ，current = current - totalWeight。</li><li>回到 1 重复。</li></ol><h2 id="ConsistentHash-负载均衡的实现"><a href="#ConsistentHash-负载均衡的实现" class="headerlink" title="ConsistentHash 负载均衡的实现"></a>ConsistentHash 负载均衡的实现</h2><p>普通一致性 Hash 当节点较少时，可能由于散列不是很均匀，容易造成某些节点压力大（一致性 Hash 倾斜问题）。Dubbo 框架使用了优化过的 Ketama 一致性 Hash。这种算法会给每个真实节点创建多个虚拟节点，让节点环形上的分布更加均匀，后续调用也会随之更加均匀。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="D:\Blog\blog\source\_drafts\Dubbo-集群容错与负载均衡\consistent-hash-invoker.jpg" alt="img" title>                </div>                <div class="image-caption">img</div>            </figure><p>上图中，相同颜色的节点，属于同一服务提供者。这样做的目的是通过引入虚拟节点，让 Invoker 在圆环上分散开来，避免数据倾斜的问题。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;Dubbo-容错策略&quot;&gt;&lt;a href=&quot;#Dubbo-容错策略&quot; class=&quot;headerlink&quot; title=&quot;Dubbo 容错策略&quot;&gt;&lt;/a&gt;Dubbo 容错策略&lt;/h1&gt;&lt;p&gt;在设计系统时，不光要考虑正常情况下，代码逻辑怎么走，还要考虑异常情况下，代码
+      
+    
+    </summary>
+    
+    
+      <category term="Dubbo" scheme="https://firecarrrr.github.io/tags/Dubbo/"/>
+    
+  </entry>
   
   <entry>
     <title>Spring 中的设计模式</title>
@@ -454,30 +477,6 @@
       
       
         &lt;h1 id=&quot;MySQL事务隔离和MVCC&quot;&gt;&lt;a href=&quot;#MySQL事务隔离和MVCC&quot; class=&quot;headerlink&quot; title=&quot;MySQL事务隔离和MVCC&quot;&gt;&lt;/a&gt;MySQL事务隔离和MVCC&lt;/h1&gt;&lt;p&gt;同样，把最近看的事务和锁的部分总结一下，这部
-      
-    
-    </summary>
-    
-      <category term="MySQL" scheme="https://firecarrrr.github.io/categories/MySQL/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL索引（一）</title>
-    <link href="https://firecarrrr.github.io/2019/07/20/mysql-index/"/>
-    <id>https://firecarrrr.github.io/2019/07/20/mysql-index/</id>
-    <published>2019-07-20T09:11:18.000Z</published>
-    <updated>2019-07-20T09:20:21.078Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="MySQL索引"><a href="#MySQL索引" class="headerlink" title="MySQL索引"></a>MySQL索引</h1><p>最近在看数据库索引相关的内容，想写成blog，一来整理一下笔记，二来整理一下思路。</p><p>索引的目的是加快数据访问的速度，要实现这个目的需要用到一些高效的数据结构。索引是在存储引擎层实现的，不同的存储引擎可能采用不同的实现方式，用到的数据结构也不尽相同。</p><h2 id="索引的数据结构基础"><a href="#索引的数据结构基础" class="headerlink" title="索引的数据结构基础"></a>索引的数据结构基础</h2><h3 id="B-Tree和B-Tree"><a href="#B-Tree和B-Tree" class="headerlink" title="B-Tree和B+ Tree"></a>B-Tree和B+ Tree</h3><p>MySQL的默认存储引擎InnoDB使用B+ Tree来实现索引，B+ Tree是B-Tree的一个变种，基本上大部分存储引擎都是使用B-Tree类的数据结构来实现索引的。</p><p><strong>为什么要用B-Tree或者B-Tree产生的动机是什么？</strong></p><p>B-Tree本质上是二叉搜索树的一个推广，每一个B-Tree内部节点x有x.n个关键字，这x.n个关键字从小到大依次排列，把关键字分成了x.n+1个区间，那么x就有x.n+1个孩子节点分别存储这些区间范围内的关键字。由于n的数值可以很大，所以B-Tree的树高可以很低，树高低就意味着找到目标需要的随机IO次数少。n的值取多少合适呢？</p><p>我们存储在数据库里的数据，是存储在磁盘上的（也有可能是SSD啦，不过很贵吧），磁盘作为一种依靠磁臂在不同磁道和扇区之间机械运动读取数据的存储装置，与内存和CPU相比就很慢。要加快数据的访问速度那就要减少磁盘IO的次数。磁盘本身存储数据的最小单位是扇区（一般为512 byte），而操作系统的文件系统不是以扇区为单位来读取磁盘的，因为这太慢了，所以有了block（块）的概念，它是一个块一个块的读取的，如果要读取的数据超过一块就会触发多次IO，一个块的大小一般是4K byte。</p><p>一个B-Tree算法的运行时间主要由它执行磁盘读写的时间决定，所以，一个B-Tree节点的大小通常和一个完整的块的大小一样大。因此，磁盘块的大小限制了B-Tree节点可以含有的孩子个数。</p><p>B+ Tree是B-Tree的一个常见变种，B+Tree把所有的卫星数据（除作为键值外的其他数据）都存储在叶子节点里，也就是说非叶节点只存储键值和孩子指针，并且叶子节点之间用指针连接。</p><p><strong>B-Tree由于它的有序性，所以增删节点，维护起来会耗费额外的资源</strong></p><p><strong>所以索引会提高查询效率，但是会降低写入和删除的效率</strong></p><h3 id="Hash表"><a href="#Hash表" class="headerlink" title="Hash表"></a>Hash表</h3><p>hash表没啥可说的，key-value存储方式。需要注意的是，由于hash索引不会按键值顺序存储，所以<strong>hash索引只适用于等值查询的场景，做区间查询会很慢，也没法做部分匹配。</strong></p><h2 id="索引的细节"><a href="#索引的细节" class="headerlink" title="索引的细节"></a>索引的细节</h2><p>下面关于索引的讨论基本上都是针对于MySQL默认存储引擎InnoDB而言的。</p><h3 id="聚簇索引与二级索引"><a href="#聚簇索引与二级索引" class="headerlink" title="聚簇索引与二级索引"></a>聚簇索引与二级索引</h3><p>对于InnoDB而言，聚簇索引其实就是主键索引，在索引的叶子节点中，存储了包含全部数据的数据行。<strong>“聚簇”的意思是说数据行和相邻键值的数据行紧凑的存储在一起（并非一直成立）。</strong></p><p>聚簇索引的实现同样依赖于存储引擎，并非所有存储引擎都支持聚簇索引。聚簇索引的优点显而易见，聚簇索引可以最大限度的提高IO密集型应用的性能。但是这种使用这种精巧的数据结构存储数据都会面临维护上的开销。对于聚簇索引来说：</p><ul><li><p><strong>插入新数据行的速度严重依赖于插入顺序。</strong>按照主键顺序插入到InnoDB表中速度肯定是最快的，非顺序插入不仅慢而且会导致很多磁盘碎片的产生。所以一般尽量用自增主键做主键值，这样在性能上和存储空间上都有优势。</p></li><li><p><strong>更新主键的代价很大。</strong>因为是数据行按主键顺序紧密存储的，所以更新主键就会带来数据行的移动。</p></li><li><p><strong>插入新行（乱序）、主键更新需要移动行时，都可能面临“页分裂（page split）”问题。</strong>当需要把一行插入到一个已满页面的时候，存储引擎会把这个页分裂成两个页来容纳这个行，页分裂操作会导致占用更多磁盘空间，空间利用率降低。</p></li><li><p><strong>聚簇索引会让全表扫描变慢，尤其是行比较稀疏的时候，或者由于页分裂导致数据存储不连续的时候。</strong>这应该是和把所有数据行直接连续存储相比而言的。</p></li></ul><p>二级索引就是指非主键索引，二级索引的叶子节点中除了存储索引列的值之外，还存储了对应行的主键值。这是与MyISAM存储引擎的一个明显的不同，MyISAM索引的叶子节点中存储的时指向数据行的行指针（MyISAM存储引擎按照数据的插入顺序，将数据行存储在磁盘上）。</p><p>InnoDB这种存储主键的方式带来了一个显而易见的好处就是<strong>减少了出现行移动或者数据页分裂时二级索引的维护工作。</strong>也带来了一个显而易见的坏处就是<strong>使用二级索引查询索引不能覆盖的列信息时，需要再到主键索引表回表查询一次。</strong></p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="索引对比.png" alt="innoDB和MyISAM索引.png" title>                </div>                <div class="image-caption">innoDB和MyISAM索引.png</div>            </figure><h3 id="索引覆盖"><a href="#索引覆盖" class="headerlink" title="索引覆盖"></a>索引覆盖</h3><p>上面说了，二级索引的叶子节点中只存放索引列的值和主键ID，对于非索引列的查找需要回表。这会带来额外的开销。索引覆盖就是说能不能让索引把查找的target字段全部给包含了。</p><p>当发起一个索引覆盖的查询时，EXPLAIN的Extra列可以看到”Using index”信息。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="usingIndex.png" alt="explain.png" title>                </div>                <div class="image-caption">explain.png</div>            </figure><h3 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h3><p>在联合索引中，索引列的顺序对索引的利用率和性能上是有影响的。在一个多列B-Tree索引中，索引列的顺序决定了排序的顺序，越靠左的列排序的优先级越高，也就是说，会先按照第一列排序，在按照第二列排序，以此类推。与此同时，在索引匹配时，是从左往右匹配的。</p><p><strong>所以在建立一个多列的联合索引时应该如何安排索引列的顺序呢？</strong></p><ul><li>最重要的原则就是如果通过调整顺序，可以少维护一个索引，那么这个顺序就是需要优先考虑的。评估的标准就是索引的复用能力。因为支持最左前缀，所以有了(a,b)这个联合索引之后，就不需要在a上建立索引了。</li><li>还有就是考虑空间占用的问题，假如需(name, age)的联合索引，和name和age单独的索引。因为name比age大，所以应该建立(name, age)这个顺序的索引。</li></ul><h3 id="索引下推"><a href="#索引下推" class="headerlink" title="索引下推"></a>索引下推</h3><p>假设现在有(name,age)联合索引，现在有一个需求：检索出表中名字第一个字是张，而且年龄是10岁的所有男孩</p><p>SQL语句如下：</p><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tuser <span class="keyword">where</span> <span class="keyword">name</span> <span class="keyword">like</span> <span class="string">'张 %'</span> <span class="keyword">and</span> age=<span class="number">10</span> <span class="keyword">and</span> ismale=<span class="number">1</span>;</span><br></pre></td></tr></table></figure><p>在这条语句执行时，根据最左前缀匹配原则，这条语句在搜索树的时候只能用到”张“，找到第一个满足条件的记录</p><p>ID3。</p><p>在MySQL 5.6之前，只能从ID3开始一个个回表，到主键索引上找到数据行，再对比字段值。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="索引下推1.jpg" alt="索引下推1.jpg" title>                </div>                <div class="image-caption">索引下推1.jpg</div>            </figure><p>在MySQL 5.6引入了索引下推优化(index condition pushdown)，可以再索引遍历过程中，对索引包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表的次数。</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="索引下推2.png" alt="索引下推2.png" title>                </div>                <div class="image-caption">索引下推2.png</div>            </figure><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>关于索引的东西还有很多，这篇只是一些非常基础的内容。这篇blog拖了好久了，因为这段时间屁事儿太多了，真的很烦。关于索引的坑以后继续填。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;MySQL索引&quot;&gt;&lt;a href=&quot;#MySQL索引&quot; class=&quot;headerlink&quot; title=&quot;MySQL索引&quot;&gt;&lt;/a&gt;MySQL索引&lt;/h1&gt;&lt;p&gt;最近在看数据库索引相关的内容，想写成blog，一来整理一下笔记，二来整理一下思路。&lt;/p&gt;
-&lt;p&gt;索
       
     
     </summary>
