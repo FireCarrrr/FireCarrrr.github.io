@@ -30,7 +30,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://firecarrrr.github.io/2020/07/04/并发容器/并发容器.png">
 <meta property="og:image" content="https://firecarrrr.github.io/2020/07/04/并发容器/concurrent.png">
-<meta property="og:updated_time" content="2020-07-04T12:03:52.394Z">
+<meta property="og:updated_time" content="2020-07-13T11:54:52.304Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="并发容器">
 <meta name="twitter:description" content="JUC 中的并发容器                                                                                                            ListList 只有一个实现 —— CopyOnWriteArrayList COWCopyOnWrite 是一种并发编程的设计模式，即写时复制。当发生写操作时，">
@@ -149,7 +149,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -301,7 +301,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Inserts the specified element at the tail of this queue.</span></span><br><span class="line"><span class="comment">  * As the queue is unbounded, this method will never return &#123;<span class="doctag">@code</span> false&#125;.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; (as specified by &#123;<span class="doctag">@link</span> Queue#offer&#125;)</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@throws</span> NullPointerException if the specified element is null</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offer</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    checkNotNull(e);</span><br><span class="line">    <span class="keyword">final</span> Node&lt;E&gt; newNode = <span class="keyword">new</span> Node&lt;E&gt;(e);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (Node&lt;E&gt; t = tail, p = t;;) &#123;</span><br><span class="line">        Node&lt;E&gt; q = p.next;</span><br><span class="line">        <span class="keyword">if</span> (q == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 如果 p 是最后一个节点，利用 cas 指令在 p 的后面加上新节点</span></span><br><span class="line">            <span class="keyword">if</span> (p.casNext(<span class="keyword">null</span>, newNode)) &#123;</span><br><span class="line">                <span class="comment">// Successful CAS is the linearization point</span></span><br><span class="line">                <span class="comment">// for e to become an element of this queue,</span></span><br><span class="line">                <span class="comment">// and for newNode to become "live".</span></span><br><span class="line">                <span class="comment">// 改变尾节点</span></span><br><span class="line">                <span class="keyword">if</span> (p != t) <span class="comment">// hop two nodes at a time</span></span><br><span class="line">                    casTail(t, newNode);  <span class="comment">// Failure is OK.</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// Lost CAS race to another thread; re-read next</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (p == q)</span><br><span class="line">            <span class="comment">// We have fallen off list.  If tail is unchanged, it</span></span><br><span class="line">            <span class="comment">// will also be off-list, in which case we need to</span></span><br><span class="line">            <span class="comment">// jump to head, from which all live nodes are always</span></span><br><span class="line">            <span class="comment">// reachable.  Else the new tail is a better bet.</span></span><br><span class="line">            p = (t != (t = tail)) ? t : head;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="comment">// Check for tail updates after two hops.</span></span><br><span class="line">            p = (p != t &amp;&amp; t != (t = tail)) ? t : q;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>ConcurrentLinkedQueue 是基于 CAS 的无锁技术实现的，性能更好。</p>
-<h2 id="fail-fast-机制"><a href="#fail-fast-机制" class="headerlink" title="fail-fast 机制"></a>fail-fast 机制</h2><p>检测到容器在遍历过程中发生了修改，则抛出 ConcurrentModificationException，不再继续遍历</p>
+<h2 id="fail-fast-机制"><a href="#fail-fast-机制" class="headerlink" title="fail-fast 机制"></a>fail-fast 机制</h2><p>Concurrent 类提供的是较低的遍历一致性。当利用迭代器遍历时，如果容器发生修改，迭代器仍然可以继续进行遍历。</p>
 
         </div>
 
@@ -310,7 +310,7 @@
     <div class="content">
         
 <span class="post-time">
-    最後更新時間：<time datetime="2020-07-04T12:03:52.394Z" itemprop="dateUpdated">2020-07-04 20:03:52</time>
+    Last updated: <time datetime="2020-07-13T11:54:52.304Z" itemprop="dateUpdated">2020-07-13 19:54:52</time>
 </span><br>
 
 
@@ -451,7 +451,7 @@
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>本部落格係採用<a rel="license" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
         </p>
     </div>
     <div class="bottom">
